@@ -3,7 +3,13 @@ const jwt = require('jsonwebtoken');
 
 // Generate JWT Token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+  const secret = process.env.JWT_SECRET || 'default_jwt_secret_key_change_this_in_production';
+  
+  if (!secret || secret === '') {
+    throw new Error('JWT_SECRET is not configured');
+  }
+  
+  return jwt.sign({ userId }, secret, {
     expiresIn: process.env.JWT_EXPIRE || '7d',
   });
 };
