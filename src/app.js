@@ -21,7 +21,7 @@ const sessionConfig = {
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     sameSite: 'lax'
   },
 };
@@ -58,6 +58,12 @@ app.set('views', path.join(__dirname, '../views'));
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.isAdmin = req.session.user?.role === 'admin' || false;
+  
+  // Refresh session timeout on each request if user is logged in
+  if (req.session.user) {
+    req.session.touch();
+  }
+  
   next();
 });
 
