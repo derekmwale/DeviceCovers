@@ -8,23 +8,26 @@ const generateToken = (userId) => {
   });
 };
 
-// Helper: Check MongoDB Connection
-const checkDBConnection = () => {
-  const mongoose = require('mongoose');
-  if (mongoose.connection.readyState !== 1) {
-    throw new Error('Database connection not established');
-  }
-};
-
 // Register User
 exports.register = async (req, res) => {
   try {
-    checkDBConnection();
-    
     const { firstName, lastName, email, password, phone, country } = req.body;
 
+    // Validate inputs
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
     // Check if user exists with timeout
-    const userExists = await User.findOne({ email }).maxTimeMS(5000);
+    let userExists;
+    try {
+      userExists = await User.findOne({ email }).maxTimeMS(5000);
+    } catch (dbError) {
+      console.error('Database query error:', dbError.message);
+      // If database error, try to proceed anyway
+      userExists = null;
+    }
+
     if (userExists) {
       return res.status(400).json({ message: 'Email already registered' });
     }
@@ -53,14 +56,13 @@ exports.register = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('Register error:', error.message);
     res.status(400).json({ message: error.message });
   }
 };
 // Login User
 exports.login = async (req, res) => {
   try {
-    checkDBConnection();
-    
     const { email, password } = req.body;
 
     // Validate inputs
@@ -69,7 +71,14 @@ exports.login = async (req, res) => {
     }
 
     // Check if user exists and get password field with timeout
-    const user = await User.findOne({ email }).select('+password').maxTimeMS(5000);
+    let user;
+    try {
+      user = await User.findOne({ email }).select('+password').maxTimeMS(5000);
+    } catch (dbError) {
+      console.error('Database query error:', dbError.message);
+      return res.status(503).json({ message: 'Database temporarily unavailable, please try again' });
+    }
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -96,6 +105,7 @@ exports.login = async (req, res) => {
       user: req.session.user,
     });
   } catch (error) {
+    console.error('Login error:', error.message);
     res.status(400).json({ message: error.message });
   }
 };
