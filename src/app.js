@@ -13,6 +13,27 @@ const app = express();
 // Connect to Database
 connectDB();
 
+// Session Store - Use memory store for now (for production use connect-mongo)
+const sessionConfig = {
+  secret: process.env.JWT_SECRET || 'your_session_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax'
+  },
+};
+
+// Only set secure cookie in production with https
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1); // Trust proxy for Vercel
+  sessionConfig.cookie.secure = true;
+}
+
+app.use(session(sessionConfig));
+
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: false,
@@ -28,21 +49,6 @@ app.use(express.static(path.join(__dirname, '../public'), {
     }
   }
 }));
-
-// Session Configuration
-app.use(
-  session({
-    secret: process.env.JWT_SECRET || 'your_session_secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax'
-    },
-  })
-);
 
 // View Engine Setup
 app.set('view engine', 'ejs');
