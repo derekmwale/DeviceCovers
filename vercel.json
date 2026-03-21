@@ -1,0 +1,21 @@
+{
+  "buildCommand": "npm install",
+  "outputDirectory": "public",
+  "nodeVersion": "18.x",
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}

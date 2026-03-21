@@ -1,0 +1,10 @@
+.env.local
+.env*.local
+.git
+.gitignore
+node_modules
+*.log
+.DS_Store
+backup.sh
+setup.sh
+COMPLETION_REPORT.sh
