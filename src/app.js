@@ -13,8 +13,31 @@ const app = express();
 // Connect to Database
 connectDB();
 
-// Session Store - Use memory store for now (for production use connect-mongo)
+// Session Store - Use MongoDB for persistent storage
+let sessionStore;
+
+// Create session store with MongoDB if URI is available
+if (process.env.MONGODB_URI) {
+  try {
+    const MongoStore = require('connect-mongo');
+    sessionStore = new MongoStore({
+      mongoUrl: process.env.MONGODB_URI,
+      touchAfter: 24 * 3600, // Lazy session update (24 hours)
+    });
+    console.log('✅ Using MongoDB session store');
+  } catch (error) {
+    console.warn('⚠️  MongoDB session store failed:', error.message);
+    sessionStore = new session.MemoryStore();
+  }
+} else {
+  // Fallback to memory store for development without MongoDB
+  console.warn('⚠️  Using MemoryStore - not suitable for production');
+  sessionStore = new session.MemoryStore();
+}
+
+// Session Configuration
 const sessionConfig = {
+  store: sessionStore,
   secret: process.env.JWT_SECRET || 'your_session_secret',
   resave: false,
   saveUninitialized: false,
