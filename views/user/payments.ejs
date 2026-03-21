@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payments - SafeTech</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="/" class="logo">
+      <div class="logo-icon">🛡️</div>
+      <span>SafeTech</span>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/api/auth/logout">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="page-content">
+  <div class="payments-page-container">
+    <div class="page-header">
+      <div class="header-content">
+        <h1>💳 Payment Management</h1>
+        <p>View and manage your insurance premium payments</p>
+      </div>
+      <div class="header-action">
+        <div class="quick-stat">
+          <span class="label">Total Paid</span>
+          <span class="value" id="totalPaidQuick">$0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Stats -->
+    <div class="payment-stats">
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <h3>Total Paid</h3>
+        <p class="stat-value" id="totalPaid">$0.00</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <h3>Pending Payments</h3>
+        <p class="stat-value" id="pendingCount">0</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <h3>Monthly Average</h3>
+        <p class="stat-value" id="monthlyAvg">$0.00</p>
+      </div>
+    </div>
+
+    <!-- Pending Payments Alert -->
+    <div id="pendingPaymentsAlert" class="alert alert-warning" style="display: none;">
+      <h3>⚠️ Action Required</h3>
+      <p>You have pending payments. Please complete them to maintain your coverage.</p>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="payments-table-section">
+      <h2>Payment History</h2>
+      <div class="table-responsive">
+        <table class="payments-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Plan</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="paymentsTableBody">
+            <tr><td colspan="5" class="loading">Loading payments...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pending Payments Alert -->
+    <div id="pendingPaymentsAlert" class="alert alert-warning" style="display: none;">
+      <h3>⚠️ Action Required</h3>
+      <p>You have pending payments. Please complete them to maintain your coverage.</p>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+</footer>
+
+<script>
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    window.location.href = '/login';
+  }
+
+  async function apiCall(url, options = {}) {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers,
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+      const error = await response.json();
+      throw new Error(error.message || 'API Error');
+    }
+
+    return response.json();
+  }
+
+  // Load Payments
+  async function loadPayments() {
+    try {
+      const payments = await apiCall('/api/payment');
+      
+      let totalPaid = 0;
+      let pendingCount = 0;
+      const pendingPayments = [];
+
+      const html = payments.length > 0
+        ? payments.map(payment => {
+          if (payment.status === 'completed') {
+            totalPaid += payment.amount || 0;
+          } else if (payment.status === 'pending') {
+            pendingCount++;
+            pendingPayments.push(payment);
+          }
+
+          return `
+            <tr>
+              <td>${new Date(payment.createdAt).toLocaleDateString()}</td>
+              <td class="amount">$${(payment.amount || 0).toFixed(2)}</td>
+              <td>${payment.plan?.planType?.toUpperCase() || 'N/A'}</td>
+              <td>
+                <span class="badge badge-${payment.status}">
+                  ${payment.status === 'pending' ? '⏳ Pending' : '✓ Completed'}
+                </span>
+              </td>
+              <td>
+                ${payment.status === 'pending' 
+                  ? `<button class="btn btn-sm btn-primary" onclick="payNow('${payment._id}')">Pay Now</button>`
+                  : `<button class="btn btn-sm btn-secondary" onclick="viewReceipt('${payment._id}')">Receipt</button>`
+                }
+              </td>
+            </tr>
+          `;
+        }).join('')
+        : '<tr><td colspan="5" class="empty">No payments yet.</td></tr>';
+
+      document.getElementById('paymentsTableBody').innerHTML = html;
+
+      // Update stats
+      document.getElementById('totalPaid').textContent = '$' + totalPaid.toFixed(2);
+      document.getElementById('pendingCount').textContent = pendingCount;
+      
+      if (payments.length > 0) {
+        const avgPaid = totalPaid / payments.length;
+        document.getElementById('monthlyAvg').textContent = '$' + avgPaid.toFixed(2);
+      }
+
+      // Show pending alert if needed
+      if (pendingCount > 0) {
+        document.getElementById('pendingPaymentsAlert').style.display = 'block';
+      }
+    } catch (error) {
+      console.error('Error loading payments:', error);
+      document.getElementById('paymentsTableBody').innerHTML = `<tr><td colspan="5" class="error">Error loading payments: ${error.message}</td></tr>`;
+    }
+  }
+
+  // Pay Now
+  async function payNow(paymentId) {
+    try {
+      const payment = await apiCall(`/api/payment/${paymentId}`);
+      
+      // Create a simple payment modal
+      const modal = `
+        <div class="modal-overlay" onclick="closeModal(event)">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h2>Process Payment</h2>
+            <div class="payment-details">
+              <p><strong>Amount:</strong> $${payment.amount.toFixed(2)}</p>
+              <p><strong>Plan:</strong> ${payment.plan?.planType?.toUpperCase()}</p>
+              <p><strong>Due Date:</strong> ${new Date(payment.dueDate).toLocaleDateString()}</p>
+            </div>
+            <form id="paymentForm">
+              <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="expiryDate">Expiry Date</label>
+                  <input type="text" id="expiryDate" placeholder="MM/YY" required />
+                </div>
+                <div class="form-group">
+                  <label for="cvv">CVV</label>
+                  <input type="text" id="cvv" placeholder="123" required />
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Pay $${payment.amount.toFixed(2)}</button>
+            </form>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modal);
+
+      document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        try {
+          const result = await apiCall(`/api/payment/${paymentId}/confirm`, {
+            method: 'POST',
+            body: JSON.stringify({ status: 'completed' })
+          });
+
+          alert('Payment successful! Thank you for your payment.');
+          closeModal();
+          loadPayments();
+        } catch (error) {
+          alert('Payment failed: ' + error.message);
+        }
+      });
+    } catch (error) {
+      alert('Error processing payment: ' + error.message);
+    }
+  }
+
+  // View Receipt
+  async function viewReceipt(paymentId) {
+    try {
+      const payment = await apiCall(`/api/payment/${paymentId}`);
+      
+      const receiptModal = `
+        <div class="modal-overlay" onclick="closeModal(event)">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h2>Payment Receipt</h2>
+            <div class="receipt">
+              <div class="receipt-header">
+                <h3>SafeTech Insurance</h3>
+                <p>Payment Receipt</p>
+              </div>
+              <div class="receipt-body">
+                <div class="receipt-row">
+                  <span>Receipt ID:</span>
+                  <span>${payment._id}</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Amount:</span>
+                  <span>$${payment.amount.toFixed(2)}</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Plan:</span>
+                  <span>${payment.plan?.planType?.toUpperCase()}</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Date:</span>
+                  <span>${new Date(payment.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Status:</span>
+                  <span>${payment.status}</span>
+                </div>
+              </div>
+              <button class="btn btn-secondary" onclick="printReceipt()">Print Receipt</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', receiptModal);
+    } catch (error) {
+      alert('Error viewing receipt: ' + error.message);
+    }
+  }
+
+  function closeModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) modal.remove();
+  }
+
+  function printReceipt() {
+    window.print();
+  }
+
+  // Load on page load
+  window.addEventListener('load', () => {
+    loadPayments();
+  });
+</script>
+<script src="/js/main.js"></script>
+</body>
+</html>

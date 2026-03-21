@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard - SafeTech</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="/" class="logo">
+      <div class="logo-icon">🛡️</div>
+      <span>SafeTech</span>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/api/auth/logout">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="page-content">
+<div class="dashboard">
+  <div class="sidebar">
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="overview">📊 Overview</a>
+      <a href="/my-laptops" class="nav-item">💻 My Laptops</a>
+      <a href="/add-laptop" class="nav-item">➕ Add Laptop</a>
+      <a href="/plans" class="nav-item">🛡️ Insurance Plans</a>
+      <a href="/payments" class="nav-item">💳 Payments</a>
+      <a href="/claims" class="nav-item">📋 Claims</a>
+      <a href="#" class="nav-item" data-section="profile">👤 Profile</a>
+    </nav>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- Overview Section -->
+    <section id="overview" class="section active">
+      <div class="section-header">
+        <h1>📊 Dashboard Overview</h1>
+        <p>Monitor your insurance policies and device coverage</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🛡️</div>
+          <h3>Active Policies</h3>
+          <p id="activePolicies" class="stat-number">0</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <h3>Total Coverage</h3>
+          <p id="totalCoverage" class="stat-number">$0</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💳</div>
+          <h3>Monthly Payment</h3>
+          <p id="monthlyPayment" class="stat-number">$0</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📝</div>
+          <h3>Claims Status</h3>
+          <p id="claimsStatus" class="stat-number">0</p>
+        </div>
+      </div>
+      <div class="dashboard-cta">
+        <p>Ready to protect more devices?</p>
+        <a href="/select-plan" class="btn btn-primary btn-lg">Get Insurance Plan</a>
+      </div>
+    </section>
+
+    <!-- Laptops Section -->
+    <section id="laptops" class="section">
+      <h1>My Laptops</h1>
+      <button class="btn btn-primary" onclick="showAddLaptopForm()">+ Add Laptop</button>
+      <div id="laptopsList" class="laptops-grid"></div>
+    </section>
+
+    <!-- Plans Section -->
+    <section id="plans" class="section">
+      <h1>Insurance Plans</h1>
+      <div id="plansList" class="plans-list"></div>
+    </section>
+
+    <!-- Payments Section -->
+    <section id="payments" class="section">
+      <h1>Payment History</h1>
+      <div id="paymentsList" class="table-responsive">
+        <table class="payments-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Plan</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="paymentsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Claims Section -->
+    <section id="claims" class="section">
+      <h1>Claims Management</h1>
+      <button class="btn btn-primary" onclick="showSubmitClaimForm()">+ Submit Claim</button>
+      <div id="claimsList" class="claims-grid"></div>
+    </section>
+
+    <!-- Profile Section -->
+    <section id="profile" class="section">
+      <h1>My Profile</h1>
+      <form id="profileForm" class="profile-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" required />
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" disabled />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" required />
+          </div>
+          <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text" id="country" required />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+      </form>
+    </section>
+  </div>
+</div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+</footer>
+
+<div id="modals"></div>
+
+<script src="/js/dashboard.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

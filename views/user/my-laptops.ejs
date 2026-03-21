@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Laptops - SafeTech</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="/" class="logo">
+      <div class="logo-icon">🛡️</div>
+      <span>SafeTech</span>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/api/auth/logout">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-content">
+  <div class="laptops-container">
+    <div class="laptops-header">
+      <div>
+        <h1>My Laptops</h1>
+        <p class="page-subtitle">Manage your registered devices and insurance coverage</p>
+      </div>
+      <a href="/add-laptop" class="btn btn-primary btn-lg">+ Add New Laptop</a>
+    </div>
+
+    <div class="laptops-section">
+      <!-- Search and Filter -->
+      <div class="search-bar">
+        <input type="text" id="searchLaptops" placeholder="Search by brand, model, or serial number..." class="search-input" />
+      </div>
+
+      <!-- Laptops Grid -->
+      <div id="laptopsList" class="laptops-list">
+        <div class="loading">Loading your laptops...</div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">💻</div>
+        <h2>No Laptops Yet</h2>
+        <p>You haven't registered any laptops yet. Start by adding your first device to get insurance protection.</p>
+        <a href="/add-laptop" class="btn btn-primary">Add Your First Laptop</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+</footer>
+
+<!-- Laptop Detail Modal -->
+<div id="laptopModal" class="modal" style="display: none;">
+  <div class="modal-content modal-lg">
+    <span class="modal-close" onclick="closeLaptopModal()">&times;</span>
+    <div id="laptopDetail"></div>
+  </div>
+</div>
+
+<!-- Edit Laptop Modal -->
+<div id="editLaptopModal" class="modal" style="display: none;">
+  <div class="modal-content modal-lg">
+    <span class="modal-close" onclick="closeEditModal()">&times;</span>
+    <h2>Edit Laptop Details</h2>
+    <form id="editLaptopForm" class="laptop-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editBrand">Brand *</label>
+          <input type="text" id="editBrand" name="brand" required />
+        </div>
+        <div class="form-group">
+          <label for="editModel">Model *</label>
+          <input type="text" id="editModel" name="model" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editSerialNumber">Serial Number *</label>
+          <input type="text" id="editSerialNumber" name="serialNumber" required />
+        </div>
+        <div class="form-group">
+          <label for="editCondition">Condition *</label>
+          <select id="editCondition" name="condition" required>
+            <option value="excellent">Excellent (Like New)</option>
+            <option value="good">Good (Minor Wear)</option>
+            <option value="fair">Fair (Visible Wear)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editPurchaseValue">Purchase Value ($) *</label>
+          <input type="number" id="editPurchaseValue" name="purchaseValue" required min="50" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label for="editPurchaseDate">Purchase Date *</label>
+          <input type="date" id="editPurchaseDate" name="purchaseDate" required />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let allLaptops = [];
+  let currentLaptopId = null;
+
+  async function apiCall(endpoint, options = {}) {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(endpoint, {
+      method: options.method || 'GET',
+      headers,
+      body: options.body,
+    });
+
+    if (response.status === 401) {
+      alert('Session expired. Please login again.');
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'API call failed');
+    }
+
+    return await response.json();
+  }
+
+  async function loadLaptops() {
+    try {
+      const data = await apiCall('/api/laptop');
+      allLaptops = data.data || [];
+      renderLaptops(allLaptops);
+    } catch (error) {
+      console.error('Error loading laptops:', error);
+      document.getElementById('laptopsList').innerHTML = '<div class="error-message">Failed to load laptops. Please try again.</div>';
+    }
+  }
+
+  function renderLaptops(laptops) {
+    const listDiv = document.getElementById('laptopsList');
+    const emptyState = document.getElementById('emptyState');
+
+    if (laptops.length === 0) {
+      listDiv.style.display = 'none';
+      emptyState.style.display = 'flex';
+      return;
+    }
+
+    listDiv.style.display = 'grid';
+    emptyState.style.display = 'none';
+
+    listDiv.innerHTML = laptops.map(laptop => `
+      <div class="laptop-card">
+        <div class="laptop-header">
+          <h3>${laptop.brand} ${laptop.model}</h3>
+          <span class="condition-badge condition-${laptop.condition}">${laptop.condition}</span>
+        </div>
+
+        <div class="laptop-info">
+          <div class="info-row">
+            <span class="label">Serial:</span>
+            <span class="value">${laptop.serialNumber}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Purchase Value:</span>
+            <span class="value">$${laptop.purchaseValue.toFixed(2)}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Purchase Date:</span>
+            <span class="value">${new Date(laptop.purchaseDate).toLocaleDateString()}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Status:</span>
+            <span class="value status-${laptop.status || 'active'}">${laptop.status || 'Active'}</span>
+          </div>
+        </div>
+
+        <div class="laptop-actions">
+          <button class="btn btn-sm btn-secondary" onclick="viewLaptopDetails('${laptop._id}')">View Details</button>
+          <button class="btn btn-sm btn-secondary" onclick="editLaptop('${laptop._id}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteLaptop('${laptop._id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function viewLaptopDetails(laptopId) {
+    const laptop = allLaptops.find(l => l._id === laptopId);
+    if (!laptop) return;
+
+    const detailHtml = `
+      <h2>${laptop.brand} ${laptop.model}</h2>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Serial Number</span>
+          <span class="detail-value">${laptop.serialNumber}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Condition</span>
+          <span class="detail-value">${laptop.condition.charAt(0).toUpperCase() + laptop.condition.slice(1)}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Purchase Value</span>
+          <span class="detail-value">$${laptop.purchaseValue.toFixed(2)}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Purchase Date</span>
+          <span class="detail-value">${new Date(laptop.purchaseDate).toLocaleDateString()}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Status</span>
+          <span class="detail-value">${laptop.status || 'Active'}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Registered</span>
+          <span class="detail-value">${new Date(laptop.createdAt).toLocaleDateString()}</span>
+        </div>
+      </div>
+      
+      ${laptop.receiptUrl ? `
+        <div class="detail-section">
+          <h3>Receipt Image</h3>
+          <img src="${laptop.receiptUrl}" alt="Receipt" class="receipt-image" />
+        </div>
+      ` : ''}
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeLaptopModal()">Close</button>
+        <button class="btn btn-primary" onclick="editLaptop('${laptop._id}')">Edit Details</button>
+      </div>
+    `;
+
+    document.getElementById('laptopDetail').innerHTML = detailHtml;
+    document.getElementById('laptopModal').style.display = 'flex';
+  }
+
+  function closeLaptopModal() {
+    document.getElementById('laptopModal').style.display = 'none';
+  }
+
+  function editLaptop(laptopId) {
+    const laptop = allLaptops.find(l => l._id === laptopId);
+    if (!laptop) return;
+
+    currentLaptopId = laptopId;
+    document.getElementById('editBrand').value = laptop.brand;
+    document.getElementById('editModel').value = laptop.model;
+    document.getElementById('editSerialNumber').value = laptop.serialNumber;
+    document.getElementById('editCondition').value = laptop.condition;
+    document.getElementById('editPurchaseValue').value = laptop.purchaseValue;
+    document.getElementById('editPurchaseDate').value = laptop.purchaseDate.split('T')[0];
+
+    closeLaptopModal();
+    document.getElementById('editLaptopModal').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('editLaptopModal').style.display = 'none';
+    currentLaptopId = null;
+  }
+
+  document.getElementById('editLaptopForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!currentLaptopId) return;
+
+    try {
+      const formData = {
+        brand: document.getElementById('editBrand').value,
+        model: document.getElementById('editModel').value,
+        serialNumber: document.getElementById('editSerialNumber').value,
+        condition: document.getElementById('editCondition').value,
+        purchaseValue: parseFloat(document.getElementById('editPurchaseValue').value),
+        purchaseDate: document.getElementById('editPurchaseDate').value
+      };
+
+      const button = e.target.querySelector('button[type="submit"]');
+      button.disabled = true;
+      button.textContent = 'Saving...';
+
+      await apiCall(`/api/laptop/${currentLaptopId}`, {
+        method: 'PUT',
+        body: JSON.stringify(formData)
+      });
+
+      alert('✓ Laptop updated successfully!');
+      closeEditModal();
+      loadLaptops();
+    } catch (error) {
+      alert('Error updating laptop: ' + error.message);
+    } finally {
+      const button = e.target.querySelector('button[type="submit"]');
+      button.disabled = false;
+      button.textContent = 'Save Changes';
+    }
+  });
+
+  async function deleteLaptop(laptopId) {
+    if (!confirm('Are you sure you want to delete this laptop? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await apiCall(`/api/laptop/${laptopId}`, {
+        method: 'DELETE'
+      });
+
+      alert('✓ Laptop deleted successfully!');
+      loadLaptops();
+    } catch (error) {
+      alert('Error deleting laptop: ' + error.message);
+    }
+  }
+
+  // Search functionality
+  document.getElementById('searchLaptops').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const filtered = allLaptops.filter(laptop =>
+      laptop.brand.toLowerCase().includes(searchTerm) ||
+      laptop.model.toLowerCase().includes(searchTerm) ||
+      laptop.serialNumber.toLowerCase().includes(searchTerm)
+    );
+    renderLaptops(filtered);
+  });
+
+  // Close modals on outside click
+  window.addEventListener('click', (e) => {
+    const laptopModal = document.getElementById('laptopModal');
+    const editModal = document.getElementById('editLaptopModal');
+    if (e.target === laptopModal) closeLaptopModal();
+    if (e.target === editModal) closeEditModal();
+  });
+
+  // Load laptops on page load
+  loadLaptops();
+</script>
+
+<style>
+  .laptops-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .laptops-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 2rem;
+  }
+
+  .laptops-header h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #1a1a1a;
+  }
+
+  .page-subtitle {
+    color: #666;
+    margin: 0.5rem 0 0 0;
+    font-size: 1.1rem;
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .laptops-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .search-bar {
+    margin-bottom: 2rem;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  }
+
+  .laptops-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .laptop-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .laptop-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-color: #0066cc;
+  }
+
+  .laptop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+  }
+
+  .laptop-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #1a1a1a;
+    flex: 1;
+  }
+
+  .condition-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .condition-excellent {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .condition-good {
+    background: #cfe2ff;
+    color: #084298;
+  }
+
+  .condition-fair {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .laptop-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .info-row .label {
+    font-weight: 600;
+    color: #666;
+  }
+
+  .info-row .value {
+    color: #1a1a1a;
+  }
+
+  .status-active {
+    color: #28a745;
+    font-weight: 600;
+  }
+
+  .laptop-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .laptop-actions .btn {
+    flex: 1;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state h2 {
+    font-size: 1.5rem;
+    color: #1a1a1a;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .empty-state p {
+    color: #666;
+    margin: 0 0 2rem 0;
+    max-width: 500px;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+    padding: 2rem;
+    background: #f5f7fa;
+    border-radius: 8px;
+  }
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: #666;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .detail-value {
+    color: #1a1a1a;
+    font-size: 1.1rem;
+  }
+
+  .detail-section {
+    margin: 2rem 0;
+  }
+
+  .detail-section h3 {
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+  }
+
+  .receipt-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    max-height: 400px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: flex-end;
+  }
+
+  .modal-actions .btn {
+    min-width: 120px;
+  }
+
+  .laptop-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+  }
+
+  .error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .laptops-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .laptops-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .laptops-list {
+      grid-template-columns: 1fr;
+    }
+
+    .detail-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</body>
+</html>

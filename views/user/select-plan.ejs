@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Insurance Plan - SafeTech</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="/" class="logo">
+      <div class="logo-icon">🛡️</div>
+      <span>SafeTech</span>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/api/auth/logout">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="page-content">
+  <div class="select-plan-container">
+    <div class="plan-wizard">
+      <!-- Step 1: Select Laptop -->
+      <div id="step1" class="wizard-step active">
+        <div class="step-header">
+          <h1>Step 1: Select Your Device</h1>
+          <p>Choose the laptop you want to insure</p>
+        </div>
+        <div id="laptopsGrid" class="laptops-grid"></div>
+        <div class="step-nav">
+          <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+          <a href="/add-laptop" class="btn btn-outline">+ Add New Laptop</a>
+        </div>
+      </div>
+
+      <!-- Step 2: Choose Plan Type -->
+      <div id="step2" class="wizard-step">
+        <div class="step-header">
+          <h1>Step 2: Choose Your Plan</h1>
+          <div class="selected-device-info">
+            <p><strong>Selected Device:</strong> <span id="selectedDeviceName"></span></p>
+            <p><strong>Device Value:</strong> <span id="selectedDeviceValue"></span></p>
+          </div>
+        </div>
+
+        <div id="plansComparison" class="plans-comparison"></div>
+
+        <div class="step-nav">
+          <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+          <button class="btn btn-primary" id="continueBtn" onclick="continueToPlan()" disabled>Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Review & Confirm -->
+      <div id="step3" class="wizard-step">
+        <div class="step-header">
+          <h1>Step 3: Review Your Plan</h1>
+          <p>Confirm your selection before purchasing</p>
+        </div>
+
+        <div class="review-card">
+          <div class="review-section">
+            <h3>Device Information</h3>
+            <div class="review-row">
+              <span class="label">Device:</span>
+              <span class="value" id="reviewDevice"></span>
+            </div>
+            <div class="review-row">
+              <span class="label">Device Value:</span>
+              <span class="value" id="reviewValue"></span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <h3>Plan Details</h3>
+            <div class="review-row">
+              <span class="label">Plan Type:</span>
+              <span class="value" id="reviewPlanType"></span>
+            </div>
+            <div class="review-row">
+              <span class="label">Monthly Premium:</span>
+              <span class="value" id="reviewPremium"></span>
+            </div>
+            <div class="review-row">
+              <span class="label">Coverage Amount:</span>
+              <span class="value" id="reviewCoverage"></span>
+            </div>
+            <div class="review-row">
+              <span class="label">Plan Description:</span>
+              <span class="value" id="reviewDescription"></span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <h3>Coverage Details</h3>
+            <ul id="coverageList" class="coverage-list"></ul>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+          <button class="btn btn-primary" id="confirmBtn" onclick="confirmPlan()">Confirm & Purchase Plan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+</footer>
+
+<script>
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    window.location.href = '/login';
+  }
+
+  // State management
+  const state = {
+    selectedLaptopId: null,
+    selectedLaptop: null,
+    selectedPlanType: null,
+    suggestedPlans: []
+  };
+
+  async function apiCall(url, options = {}) {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers,
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+      const error = await response.json();
+      throw new Error(error.message || 'API Error');
+    }
+
+    return response.json();
+  }
+
+  // Load Laptops
+  async function loadLaptops() {
+    try {
+      const laptops = await apiCall('/api/laptop');
+      
+      if (laptops.length === 0) {
+        document.getElementById('laptopsGrid').innerHTML = `
+          <div class="empty-state">
+            <p>No laptops found. Please add a laptop first.</p>
+            <a href="/add-laptop" class="btn btn-primary">Add Laptop</a>
+          </div>
+        `;
+        return;
+      }
+
+      const html = laptops.map(laptop => `
+        <div class="laptop-card-selectable" onclick="selectLaptop('${laptop._id}', '${laptop.brand} ${laptop.model}', ${laptop.purchaseValue})">
+          <div class="laptop-card-content">
+            <h3>${laptop.brand} ${laptop.model}</h3>
+            <p><strong>Serial:</strong> ${laptop.serialNumber}</p>
+            <p><strong>Value:</strong> $${laptop.purchaseValue.toFixed(2)}</p>
+            <p><strong>Condition:</strong> <span class="badge badge-${laptop.condition}">${laptop.condition}</span></p>
+          </div>
+          <div class="select-indicator">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="11"></circle>
+            </svg>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('laptopsGrid').innerHTML = html;
+    } catch (error) {
+      document.getElementById('laptopsGrid').innerHTML = `<div class="error-message">Error loading laptops: ${error.message}</div>`;
+    }
+  }
+
+  // Select Laptop
+  async function selectLaptop(laptopId, deviceName, deviceValue) {
+    state.selectedLaptopId = laptopId;
+    state.selectedLaptop = { name: deviceName, value: deviceValue };
+
+    // Update UI
+    document.querySelectorAll('.laptop-card-selectable').forEach(card => {
+      card.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
+
+    try {
+      state.suggestedPlans = await apiCall(`/api/laptop/${laptopId}/suggested-plans`);
+      displayPlans();
+      goToStep(2);
+    } catch (error) {
+      alert('Error loading plans: ' + error.message);
+    }
+  }
+
+  // Display Plans
+  function displayPlans() {
+    document.getElementById('selectedDeviceName').textContent = state.selectedLaptop.name;
+    document.getElementById('selectedDeviceValue').textContent = '$' + state.selectedLaptop.value.toFixed(2);
+
+    const plansHtml = state.suggestedPlans.map(plan => `
+      <div class="plan-card-comparison" onclick="selectPlan('${plan.type}', this)">
+        <div class="plan-icon">
+          ${plan.type === 'basic' ? '🛡️' : plan.type === 'premium' ? '⭐' : '👑'}
+        </div>
+        <h3>${plan.name}</h3>
+        <p class="plan-price">$${plan.monthly.toFixed(2)}<span>/month</span></p>
+        <div class="plan-features">
+          <div class="feature">
+            <strong>Coverage</strong>
+            <p>$${plan.coverage.toFixed(2)}</p>
+          </div>
+          <div class="feature">
+            <strong>Deductible</strong>
+            <p>$${(plan.coverage * 0.1).toFixed(2)}</p>
+          </div>
+        </div>
+        <p class="plan-description">${plan.description}</p>
+        <div class="plan-highlights">
+          <span class="highlight">✓ ${plan.type === 'basic' ? 'Water Damage' : plan.type === 'premium' ? 'Theft & Damage' : 'Complete Coverage'}</span>
+          <span class="highlight">✓ 24/7 Support</span>
+        </div>
+        <button class="btn btn-outline" onclick="event.stopPropagation()">Select Plan</button>
+      </div>
+    `).join('');
+
+    document.getElementById('plansComparison').innerHTML = plansHtml;
+  }
+
+  // Select Plan
+  function selectPlan(planType, element) {
+    state.selectedPlanType = planType;
+
+    document.querySelectorAll('.plan-card-comparison').forEach(card => {
+      card.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    document.getElementById('continueBtn').disabled = false;
+  }
+
+  // Continue to Review
+  function continueToPlan() {
+    if (!state.selectedPlanType) {
+      alert('Please select a plan');
+      return;
+    }
+
+    const plan = state.suggestedPlans.find(p => p.type === state.selectedPlanType);
+    
+    document.getElementById('reviewDevice').textContent = state.selectedLaptop.name;
+    document.getElementById('reviewValue').textContent = '$' + state.selectedLaptop.value.toFixed(2);
+    document.getElementById('reviewPlanType').textContent = plan.name;
+    document.getElementById('reviewPremium').textContent = '$' + plan.monthly.toFixed(2) + '/month';
+    document.getElementById('reviewCoverage').textContent = '$' + plan.coverage.toFixed(2);
+    document.getElementById('reviewDescription').textContent = plan.description;
+
+    const coverageItems = {
+      basic: ['Water damage protection', 'Up to $500 coverage', 'Email support'],
+      premium: ['Theft & damage protection', 'Up to $1,500 coverage', '24/7 phone support', 'Water & liquid damage'],
+      pro: ['Complete coverage', '90% device value', 'Loss protection', 'Extended warranty', 'Priority support']
+    };
+
+    const items = coverageItems[state.selectedPlanType] || [];
+    document.getElementById('coverageList').innerHTML = items
+      .map(item => `<li><strong>✓</strong> ${item}</li>`)
+      .join('');
+
+    goToStep(3);
+  }
+
+  // Confirm Plan
+  async function confirmPlan() {
+    try {
+      document.getElementById('confirmBtn').disabled = true;
+      document.getElementById('confirmBtn').textContent = 'Processing...';
+
+      await apiCall('/api/plan', {
+        method: 'POST',
+        body: JSON.stringify({
+          laptopId: state.selectedLaptopId,
+          planType: state.selectedPlanType
+        })
+      });
+
+      alert('Plan purchased successfully! Your coverage is now active.');
+      window.location.href = '/plans';
+    } catch (error) {
+      alert('Error creating plan: ' + error.message);
+      document.getElementById('confirmBtn').disabled = false;
+      document.getElementById('confirmBtn').textContent = 'Confirm & Purchase Plan';
+    }
+  }
+
+  // Navigation
+  function goToStep(stepNum) {
+    document.querySelectorAll('.wizard-step').forEach(step => {
+      step.classList.remove('active');
+    });
+    document.getElementById(`step${stepNum}`).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function goBack() {
+    if (document.getElementById('step3').classList.contains('active')) {
+      goToStep(2);
+    } else if (document.getElementById('step2').classList.contains('active')) {
+      goToStep(1);
+    }
+  }
+
+  // Initialize
+  window.addEventListener('load', () => {
+    loadLaptops();
+  });
+</script>
+<script src="/js/main.js"></script>
+</body>
+</html>

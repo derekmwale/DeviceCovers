@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - SafeTech</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="logo"><a href="/">SafeTech</a></div>
+    <ul class="nav-menu">
+      <li><a href="/admin">Admin Panel</a></li>
+      <li><a href="/api/auth/logout">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="page-content">
+<div class="admin-dashboard">
+  <div class="admin-header">
+    <h1>Admin Panel</h1>
+    <p>Welcome, Admin</p>
+  </div>
+
+  <div class="admin-nav">
+    <button class="nav-btn active" data-page="overview">Overview</button>
+    <button class="nav-btn" data-page="plans">Plans Review</button>
+    <button class="nav-btn" data-page="claims">Claims Review</button>
+    <button class="nav-btn" data-page="users">Users</button>
+    <button class="nav-btn" data-page="reports">Reports</button>
+  </div>
+
+  <!-- Overview Page -->
+  <div id="overview" class="admin-page active">
+    <h2>Dashboard Overview</h2>
+    <div class="admin-stats">
+      <div class="stat">
+        <h3>Total Users</h3>
+        <p id="totalUsers">0</p>
+      </div>
+      <div class="stat">
+        <h3>Active Plans</h3>
+        <p id="totalPlans">0</p>
+      </div>
+      <div class="stat">
+        <h3>Total Claims</h3>
+        <p id="totalClaims">0</p>
+      </div>
+      <div class="stat">
+        <h3>Pending Claims</h3>
+        <p id="pendingClaims">0</p>
+      </div>
+      <div class="stat">
+        <h3>Total Revenue</h3>
+        <p id="totalRevenue">$0</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plans Review Page -->
+  <div id="plans" class="admin-page">
+    <h2>Pending Plans for Approval</h2>
+    <div id="pendingPlans" class="admin-table"></div>
+  </div>
+
+  <!-- Claims Review Page -->
+  <div id="claims" class="admin-page">
+    <h2>Claims Under Review</h2>
+    <div id="claimsReview" class="admin-table"></div>
+  </div>
+
+  <!-- Users Page -->
+  <div id="users" class="admin-page">
+    <h2>All Users</h2>
+    <div id="usersList" class="admin-table"></div>
+  </div>
+
+  <!-- Reports Page -->
+  <div id="reports" class="admin-page">
+    <h2>Reports</h2>
+    <div id="reportContent"></div>
+  </div>
+</div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+</footer>
+
+<script src="/js/admin.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

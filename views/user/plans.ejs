@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insurance Plans - SafeTech</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #ffffff;
+    }
+
+    .plans-auth-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    .plans-branding-section {
+      background: linear-gradient(135deg, #0066ff 0%, #003d99 50%, #00d4ff 100%);
+      padding: 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .plans-branding-section::before {
+      content: '';
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      top: -50px;
+      right: -50px;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .plans-branding-section::after {
+      content: '';
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 50%;
+      bottom: -30px;
+      left: -30px;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(20px); }
+    }
+
+    .plans-branding-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .plans-branding-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 3rem;
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .plans-branding-logo span {
+      background: linear-gradient(90deg, #ffffff 0%, #00d4ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .plans-branding-hero h2 {
+      font-size: 2.2rem;
+      line-height: 1.3;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .plans-branding-hero p {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      opacity: 0.95;
+      margin-bottom: 3rem;
+    }
+
+    .plans-benefits {
+      display: grid;
+      gap: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .plans-benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .plans-benefit-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .plans-benefit-text {
+      flex: 1;
+    }
+
+    .plans-benefit-text strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .plans-benefit-text span {
+      opacity: 0.9;
+      font-size: 0.9rem;
+    }
+
+    .plans-form-section {
+      padding: 3rem 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: #ffffff;
+      overflow-y: auto;
+    }
+
+    .plans-form-header {
+      margin-bottom: 2rem;
+    }
+
+    .plans-form-header h1 {
+      font-size: 2rem;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .plans-form-header p {
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .plans-form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .plans-form-group label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .plans-form-group select,
+    .plans-form-group input {
+      width: 100%;
+      padding: 0.875rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .plans-form-group select:focus,
+    .plans-form-group input:focus {
+      outline: none;
+      border-color: #0066ff;
+      box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+    }
+
+    .plans-options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .plans-option-card {
+      padding: 1.5rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f8fafc;
+    }
+
+    .plans-option-card:hover {
+      border-color: #0066ff;
+      box-shadow: 0 4px 12px rgba(0, 102, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .plans-option-card.selected {
+      border-color: #0066ff;
+      background: rgba(0, 102, 255, 0.05);
+      box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+    }
+
+    .plans-option-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .plans-option-card h3 {
+      font-size: 1.25rem;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .plans-option-price {
+      font-size: 1.5rem;
+      color: #0066ff;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .plans-option-price span {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .plans-option-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .plans-option-features li {
+      padding: 0.25rem 0;
+    }
+
+    .plans-option-features li:before {
+      content: '✓ ';
+      color: #10b981;
+      font-weight: bold;
+    }
+
+    .plans-confirmation {
+      display: none;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: #f0f9ff;
+      border: 2px solid #0066ff;
+      border-radius: 0.75rem;
+    }
+
+    .plans-confirmation.show {
+      display: block;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .plans-confirmation h3 {
+      color: #0066ff;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .plans-confirmation p {
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .plans-confirmation strong {
+      color: #0052cc;
+    }
+
+    .plans-btn-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .plans-btn {
+      padding: 0.875rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+    }
+
+    .plans-btn-primary {
+      background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+      color: white;
+    }
+
+    .plans-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 102, 255, 0.3);
+    }
+
+    .plans-btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .plans-btn-secondary {
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 2px solid #e2e8f0;
+    }
+
+    .plans-btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .plans-empty-state {
+      text-align: center;
+      padding: 2rem;
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .plans-empty-state p {
+      color: #64748b;
+      margin-bottom: 1rem;
+    }
+
+    .plans-active-section {
+      margin-bottom: 2rem;
+    }
+
+    .plans-active-section h2 {
+      font-size: 1.1rem;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .plans-active-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .plans-active-item {
+      padding: 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 0.5rem;
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .plans-active-info {
+      flex: 1;
+    }
+
+    .plans-active-device {
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 0.25rem;
+    }
+
+    .plans-active-details {
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    .plans-active-badge {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      background: #10b981;
+      color: white;
+      border-radius: 0.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .plans-active-badge.pending {
+      background: #f59e0b;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .plans-auth-container {
+        grid-template-columns: 1fr;
+      }
+
+      .plans-branding-section {
+        display: none;
+      }
+
+      .plans-form-section {
+        padding: 2rem;
+      }
+
+      .plans-options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .plans-form-section {
+        padding: 1.5rem;
+      }
+
+      .plans-form-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .plans-option-card {
+        padding: 1rem;
+      }
+
+      .plans-option-icon {
+        font-size: 2rem;
+      }
+
+      .plans-btn-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="plans-auth-container">
+  <!-- Branding Section -->
+  <div class="plans-branding-section">
+    <div class="plans-branding-content">
+      <div class="plans-branding-logo">
+        <span>🛡️</span>
+        <span>SafeTech</span>
+      </div>
+      <div class="plans-branding-hero">
+        <h2>Protect Your Digital Assets</h2>
+        <p>Choose the perfect insurance plan for your devices. Get comprehensive coverage against theft, damage, and accidents.</p>
+      </div>
+    </div>
+
+    <div class="plans-benefits">
+      <div class="plans-benefit-item">
+        <div class="plans-benefit-icon">⚡</div>
+        <div class="plans-benefit-text">
+          <strong>Instant Coverage</strong>
+          <span>Active within minutes of purchase</span>
+        </div>
+      </div>
+      <div class="plans-benefit-item">
+        <div class="plans-benefit-icon">💰</div>
+        <div class="plans-benefit-text">
+          <strong>Affordable Premiums</strong>
+          <span>Starting from just $5/month</span>
+        </div>
+      </div>
+      <div class="plans-benefit-item">
+        <div class="plans-benefit-icon">📞</div>
+        <div class="plans-benefit-text">
+          <strong>24/7 Support</strong>
+          <span>Expert assistance when you need it</span>
+        </div>
+      </div>
+      <div class="plans-benefit-item">
+        <div class="plans-benefit-icon">✓</div>
+        <div class="plans-benefit-text">
+          <strong>Flexible Plans</strong>
+          <span>Choose coverage that fits your needs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Section -->
+  <div class="plans-form-section">
+    <div class="plans-form-header">
+      <h1>Choose Your Plan</h1>
+      <p>Select a device and protection level</p>
+    </div>
+
+    <!-- Active Plans -->
+    <div class="plans-active-section" id="activePlansSection" style="display: none;">
+      <h2>Your Active Plans</h2>
+      <div class="plans-active-list" id="activePlansList"></div>
+    </div>
+
+    <!-- Device Selection -->
+    <div class="plans-form-group">
+      <label for="deviceSelect">🖥️ Select Your Device</label>
+      <select id="deviceSelect" onchange="updatePlanOptions()">
+        <option value="">Choose a device...</option>
+      </select>
+    </div>
+
+    <!-- Plan Options -->
+    <div id="planOptionsContainer" class="plans-options-grid" style="display: none;">
+      <div class="plans-option-card" onclick="selectPlan('basic', this)">
+        <div class="plans-option-icon">🛡️</div>
+        <h3>Basic</h3>
+        <div class="plans-option-price">$5<span>/mo</span></div>
+        <ul class="plans-option-features">
+          <li>Water damage</li>
+          <li>Coverage: $500</li>
+        </ul>
+      </div>
+
+      <div class="plans-option-card" onclick="selectPlan('premium', this)">
+        <div class="plans-option-icon">⭐</div>
+        <h3>Premium</h3>
+        <div class="plans-option-price">$10<span>/mo</span></div>
+        <ul class="plans-option-features">
+          <li>Theft & damage</li>
+          <li>Coverage: $1,500</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+
+      <div class="plans-option-card" onclick="selectPlan('pro', this)">
+        <div class="plans-option-icon">👑</div>
+        <h3>Pro</h3>
+        <div class="plans-option-price">$15<span>/mo</span></div>
+        <ul class="plans-option-features">
+          <li>Complete coverage</li>
+          <li>Coverage: 90% value</li>
+          <li>Loss protection</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Confirmation -->
+    <div class="plans-confirmation" id="confirmationBox">
+      <h3>Ready to activate?</h3>
+      <p>Device: <strong id="confirmDevice"></strong></p>
+      <p>Plan: <strong id="confirmPlan"></strong> • <strong id="confirmPrice"></strong>/month</p>
+      <div class="plans-btn-group">
+        <button class="plans-btn plans-btn-primary" onclick="activatePlan()">Activate Plan</button>
+        <button class="plans-btn plans-btn-secondary" onclick="resetSelection()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    window.location.href = '/login';
+  }
+
+  let allLaptops = [];
+  let selectedLaptopId = null;
+  let selectedPlanType = null;
+
+  const planDetails = {
+    basic: { name: 'Basic', price: 5 },
+    premium: { name: 'Premium', price: 10 },
+    pro: { name: 'Pro', price: 15 }
+  };
+
+  async function apiCall(url, options = {}) {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers,
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+      const error = await response.json();
+      throw new Error(error.message || 'API Error');
+    }
+
+    return response.json();
+  }
+
+  async function loadActivePlans() {
+    try {
+      const plans = await apiCall('/api/plan');
+      const section = document.getElementById('activePlansSection');
+      const list = document.getElementById('activePlansList');
+
+      if (plans.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      list.innerHTML = plans.map(plan => `
+        <div class="plans-active-item">
+          <div class="plans-active-info">
+            <div class="plans-active-device">
+              🖥️ ${plan.laptop?.brand} ${plan.laptop?.model}
+            </div>
+            <div class="plans-active-details">
+              ${plan.planType.toUpperCase()} • $${plan.monthlyPremium?.toFixed(2) || '0.00'}/month • Coverage: $${plan.coverageAmount?.toFixed(2) || '0.00'}
+            </div>
+          </div>
+          <span class="plans-active-badge ${plan.status === 'pending' ? 'pending' : ''}">
+            ${plan.status === 'pending' ? '⏳ Pending' : '✓ Active'}
+          </span>
+        </div>
+      `).join('');
+    } catch (error) {
+      console.error('Error loading plans:', error);
+    }
+  }
+
+  async function loadDevices() {
+    try {
+      allLaptops = await apiCall('/api/laptop');
+      const select = document.getElementById('deviceSelect');
+      
+      select.innerHTML = '<option value="">Choose a device...</option>';
+      
+      allLaptops.forEach(laptop => {
+        const option = document.createElement('option');
+        option.value = laptop._id;
+        option.textContent = `${laptop.brand} ${laptop.model} ($${laptop.purchaseValue})`;
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Error loading devices:', error);
+    }
+  }
+
+  function updatePlanOptions() {
+    const select = document.getElementById('deviceSelect');
+    selectedLaptopId = select.value;
+
+    if (selectedLaptopId) {
+      document.getElementById('planOptionsContainer').style.display = 'grid';
+      resetConfirmation();
+    } else {
+      document.getElementById('planOptionsContainer').style.display = 'none';
+      resetConfirmation();
+    }
+  }
+
+  function selectPlan(planType, element) {
+    selectedPlanType = planType;
+
+    document.querySelectorAll('.plans-option-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    element.classList.add('selected');
+
+    const laptop = allLaptops.find(l => l._id === selectedLaptopId);
+    const plan = planDetails[planType];
+
+    document.getElementById('confirmDevice').textContent = `${laptop.brand} ${laptop.model}`;
+    document.getElementById('confirmPlan').textContent = plan.name;
+    document.getElementById('confirmPrice').textContent = `$${plan.price}`;
+    
+    document.getElementById('confirmationBox').classList.add('show');
+  }
+
+  async function activatePlan() {
+    if (!selectedLaptopId || !selectedPlanType) {
+      alert('Please select both a device and a plan');
+      return;
+    }
+
+    try {
+      const button = event.target;
+      button.disabled = true;
+      button.textContent = 'Activating...';
+
+      const laptop = allLaptops.find(l => l._id === selectedLaptopId);
+      
+      let coverageAmount = 0;
+      let monthlyPremium = 0;
+
+      if (selectedPlanType === 'basic') {
+        coverageAmount = 500;
+        monthlyPremium = 5;
+      } else if (selectedPlanType === 'premium') {
+        coverageAmount = 1500;
+        monthlyPremium = 10;
+      } else if (selectedPlanType === 'pro') {
+        coverageAmount = Math.min(laptop.purchaseValue * 0.9, 5000);
+        monthlyPremium = 15;
+      }
+
+      await apiCall('/api/plan', {
+        method: 'POST',
+        body: JSON.stringify({
+          laptop: selectedLaptopId,
+          planType: selectedPlanType,
+          coverageAmount: coverageAmount,
+          monthlyPremium: monthlyPremium
+        })
+      });
+
+      alert('✓ Plan activated successfully! Your device is now covered.');
+      resetSelection();
+      loadActivePlans();
+      loadDevices();
+    } catch (error) {
+      alert('Error: ' + error.message);
+      event.target.disabled = false;
+      event.target.textContent = 'Activate Plan';
+    }
+  }
+
+  function resetSelection() {
+    document.getElementById('deviceSelect').value = '';
+    document.getElementById('planOptionsContainer').style.display = 'none';
+    selectedLaptopId = null;
+    selectedPlanType = null;
+    resetConfirmation();
+  }
+
+  function resetConfirmation() {
+    document.getElementById('confirmationBox').classList.remove('show');
+    document.querySelectorAll('.plans-option-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+  }
+
+  window.addEventListener('load', () => {
+    loadActivePlans();
+    loadDevices();
+  });
+</script>
+</body>
+</html>

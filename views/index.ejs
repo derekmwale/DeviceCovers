@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTech - Laptop Insurance</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="/" class="logo">
+      <div class="logo-icon">🛡️</div>
+      <span>SafeTech</span>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="/">Home</a></li>
+      <% if (user) { %>
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/api/auth/logout">Logout</a></li>
+      <% } else { %>
+      <li><a href="/login">Login</a></li>
+      <li><a href="/register" class="btn-primary">Register</a></li>
+      <% } %>
+    </ul>
+  </div>
+</nav>
+<div class="page-content">
+<div class="hero">
+  <div class="hero-container">
+    <div class="hero-content">
+      <h1>Enterprise-Grade <span class="highlight">Device Protection</span> for Emerging Markets</h1>
+      <p>SafeTech provides innovative, affordable laptop insurance solutions designed for emerging markets like Zambia. Protect your investment with flexible monthly plans, instant claims processing, and 24/7 support.</p>
+      <div class="cta-buttons">
+        <% if (user) { %>
+        <a href="/dashboard" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        <% } else { %>
+        <a href="/register" class="btn btn-primary btn-lg">Get Protected Now</a>
+        <a href="/login" class="btn btn-secondary btn-lg">Sign In</a>
+        <% } %>
+      </div>
+    </div>
+    <div class="hero-image">💻</div>
+  </div>
+</div>
+
+<section class="features">
+  <h2>Why Choose SafeTech?</h2>
+  <div class="feature-grid">
+    <div class="feature">
+      <h3>📱 Easy Registration</h3>
+      <p>Sign up in minutes and add your laptops instantly</p>
+    </div>
+    <div class="feature">
+      <h3>💰 Affordable Plans</h3>
+      <p>Monthly subscriptions starting from just $5</p>
+    </div>
+    <div class="feature">
+      <h3>🛡️ Full Coverage</h3>
+      <p>Damage, theft, and loss protection available</p>
+    </div>
+    <div class="feature">
+      <h3>⚡ Quick Claims</h3>
+      <p>Submit and track your claims in real-time</p>
+    </div>
+  </div>
+</section>
+
+<section class="plans">
+  <h2>Insurance Plans</h2>
+  <div class="plans-grid">
+    <div class="plan">
+      <h3>Basic</h3>
+      <p class="price">From $5/mo</p>
+      <ul>
+        <li>Water damage protection</li>
+        <li>Up to $500 coverage</li>
+        <li>Email support</li>
+      </ul>
+      <button class="btn btn-outline">Learn More</button>
+    </div>
+    <div class="plan featured">
+      <h3>Premium</h3>
+      <p class="price">From $10/mo</p>
+      <ul>
+        <li>Theft & damage protection</li>
+        <li>Up to $1,500 coverage</li>
+        <li>24/7 support</li>
+        <li>Water & liquid damage</li>
+      </ul>
+      <button class="btn btn-primary">Get Premium</button>
+    </div>
+    <div class="plan">
+      <h3>Pro</h3>
+      <p class="price">From $15/mo</p>
+      <ul>
+        <li>Complete coverage</li>
+        <li>90% device value</li>
+        <li>Loss protection</li>
+        <li>Extended warranty</li>
+      </ul>
+      <button class="btn btn-outline">Learn More</button>
+    </div>
+  </div>
+</section>
+
+<section class="how-it-works">
+  <h2>How It Works</h2>
+  <div class="steps">
+    <div class="step">
+      <span class="step-num">1</span>
+      <h4>Register</h4>
+      <p>Create your SafeTech account</p>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <h4>Add Laptop</h4>
+      <p>Register your device details</p>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <h4>Choose Plan</h4>
+      <p>Select your coverage level</p>
+    </div>
+    <div class="step">
+      <span class="step-num">4</span>
+      <h4>Pay Monthly</h4>
+      <p>Simple, affordable subscriptions</p>
+    </div>
+    <div class="step">
+      <span class="step-num">5</span>
+      <h4>Claim</h4>
+      <p>Submit claims when needed</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved. Laptop Insurance Made Simple.</p>
+</footer>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

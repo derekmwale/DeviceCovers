@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claims - SafeTech</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="/" class="logo">
+      <div class="logo-icon">🛡️</div>
+      <span>SafeTech</span>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/api/auth/logout">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="page-content">
+  <div class="claims-page-container">
+    <div class="page-header">
+      <div class="header-content">
+        <h1>📋 Insurance Claims</h1>
+        <p>Track and manage your insurance claims</p>
+      </div>
+      <div class="header-action">
+        <button class="btn btn-primary btn-lg">+ Submit New Claim</button>
+      </div>
+    </div>
+
+    <!-- Claims List -->
+    <div class="claims-section">
+      <div id="claimsList" class="claims-list-container"></div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+</footer>
+
+<script>
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    window.location.href = '/login';
+  }
+
+  async function apiCall(url, options = {}) {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers,
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+      const error = await response.json();
+      throw new Error(error.message || 'API Error');
+    }
+
+    return response.json();
+  }
+
+  // Load Claims
+  async function loadClaims() {
+    try {
+      const claims = await apiCall('/api/claim');
+      
+      const html = claims.length > 0
+        ? claims.map(claim => `
+          <div class="claim-card-detailed">
+            <div class="claim-header">
+              <h3>Claim #${claim.claimNumber}</h3>
+              <span class="badge badge-${claim.status}">${claim.status}</span>
+            </div>
+            <div class="claim-details">
+              <div class="detail-row">
+                <span class="label">Device:</span>
+                <span class="value">${claim.laptop?.brand || 'N/A'} ${claim.laptop?.model || ''}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Claim Type:</span>
+                <span class="value">${claim.claimType?.toUpperCase()}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Amount:</span>
+                <span class="value">$${claim.estimatedCost?.toFixed(2) || '0.00'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Submitted:</span>
+                <span class="value">${new Date(claim.createdAt).toLocaleDateString()}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Description:</span>
+                <span class="value">${claim.description || 'No description'}</span>
+              </div>
+            </div>
+            <div class="claim-actions">
+              <button class="btn btn-secondary" onclick="trackClaim('${claim._id}')">Track Progress</button>
+              ${claim.status === 'pending' ? `<button class="btn btn-danger" onclick="withdrawClaim('${claim._id}')">Withdraw</button>` : ''}
+            </div>
+          </div>
+        `).join('')
+        : '<div class="empty-state"><p>No claims yet. If you need to submit a claim, click the button above.</p></div>';
+      
+      document.getElementById('claimsList').innerHTML = html;
+    } catch (error) {
+      console.error('Error loading claims:', error);
+      document.getElementById('claimsList').innerHTML = `<div class="error-message">Error loading claims: ${error.message}</div>`;
+    }
+  }
+
+  // Show Submit Claim Form
+  async function showSubmitClaimForm() {
+    try {
+      const laptops = await apiCall('/api/laptop');
+      
+      if (laptops.length === 0) {
+        alert('Please add a laptop and activate an insurance plan first.');
+        return;
+      }
+
+      const laptopOptions = laptops
+        .filter(l => l.status === 'active')
+        .map(l => `<option value="${l._id}">${l.brand} ${l.model}</option>`)
+        .join('');
+
+      if (!laptopOptions) {
+        alert('Please activate an insurance plan for a laptop first.');
+        return;
+      }
+
+      const modal = `
+        <div class="modal-overlay" onclick="closeModal(event)">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h2>Submit Insurance Claim</h2>
+            <form id="submitClaimForm">
+              <div class="form-group">
+                <label for="laptopId">Select Device *</label>
+                <select id="laptopId" name="laptopId" required>
+                  <option value="">Choose a device...</option>
+                  ${laptopOptions}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="claimType">Claim Type *</label>
+                <select id="claimType" name="claimType" required>
+                  <option value="">Select claim type...</option>
+                  <option value="damage">Damage</option>
+                  <option value="theft">Theft</option>
+                  <option value="loss">Loss</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" rows="4" placeholder="Describe what happened..." required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="estimatedCost">Estimated Cost ($) *</label>
+                <input type="number" id="estimatedCost" name="estimatedCost" min="0" step="0.01" required />
+              </div>
+              <button type="submit" class="btn btn-primary">Submit Claim</button>
+            </form>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modal);
+
+      document.getElementById('submitClaimForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const data = {
+          laptop: formData.get('laptopId'),
+          claimType: formData.get('claimType'),
+          description: formData.get('description'),
+          estimatedCost: parseFloat(formData.get('estimatedCost')),
+        };
+
+        try {
+          await apiCall('/api/claim', {
+            method: 'POST',
+            body: JSON.stringify(data),
+          });
+
+          alert('Claim submitted successfully! Our team will review it shortly.');
+          closeModal();
+          loadClaims();
+        } catch (error) {
+          alert('Error submitting claim: ' + error.message);
+        }
+      });
+    } catch (error) {
+      alert('Error loading form: ' + error.message);
+    }
+  }
+
+  // Track Claim
+  async function trackClaim(claimId) {
+    try {
+      const claim = await apiCall(`/api/claim/${claimId}`);
+      
+      const timeline = `
+        <div class="timeline">
+          ${claim.timeline ? claim.timeline.map(event => `
+            <div class="timeline-item">
+              <div class="timeline-date">${new Date(event.date).toLocaleDateString()}</div>
+              <div class="timeline-content">
+                <h4>${event.status}</h4>
+                <p>${event.note}</p>
+              </div>
+            </div>
+          `).join('') : '<p>No updates yet. We will keep you informed.</p>'}
+        </div>
+      `;
+
+      const modal = `
+        <div class="modal-overlay" onclick="closeModal(event)">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h2>Claim #${claim.claimNumber} - Progress</h2>
+            <div class="claim-tracking">
+              <p><strong>Status:</strong> ${claim.status}</p>
+              <p><strong>Current:</strong> ${claim.currentStatus}</p>
+              ${timeline}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modal);
+    } catch (error) {
+      alert('Error tracking claim: ' + error.message);
+    }
+  }
+
+  async function withdrawClaim(claimId) {
+    if (confirm('Are you sure you want to withdraw this claim?')) {
+      try {
+        await apiCall(`/api/claim/${claimId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ status: 'withdrawn' })
+        });
+        alert('Claim withdrawn successfully.');
+        loadClaims();
+      } catch (error) {
+        alert('Error withdrawing claim: ' + error.message);
+      }
+    }
+  }
+
+  function closeModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) modal.remove();
+  }
+
+  // Load on page load
+  window.addEventListener('load', () => {
+    loadClaims();
+  });
+</script>
+<script src="/js/main.js"></script>
+</body>
+</html>

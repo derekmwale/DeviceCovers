@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Laptop - SafeTech</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="/" class="logo">
+      <div class="logo-icon">🛡️</div>
+      <span>SafeTech</span>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/api/auth/logout">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="page-content">
+  <div class="add-laptop-container">
+    <div class="form-wrapper">
+      <h1>Add New Laptop</h1>
+      <p class="form-subtitle">Register your device to get insurance protection</p>
+
+      <form id="addLaptopForm" enctype="multipart/form-data" class="laptop-form">
+        <div class="form-section">
+          <h3>Device Information</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="brand">Brand *</label>
+              <input type="text" id="brand" name="brand" placeholder="e.g., Apple, Dell, HP" required />
+            </div>
+            <div class="form-group">
+              <label for="model">Model *</label>
+              <input type="text" id="model" name="model" placeholder="e.g., MacBook Pro 14-inch" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="serialNumber">Serial Number *</label>
+              <input type="text" id="serialNumber" name="serialNumber" placeholder="Device serial number" required />
+            </div>
+            <div class="form-group">
+              <label for="condition">Condition *</label>
+              <select id="condition" name="condition" required>
+                <option value="">Select condition</option>
+                <option value="excellent">Excellent (Like New)</option>
+                <option value="good">Good (Minor Wear)</option>
+                <option value="fair">Fair (Visible Wear)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Purchase Details</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="purchaseValue">Purchase Value ($) *</label>
+              <input type="number" id="purchaseValue" name="purchaseValue" placeholder="Device cost in USD" required min="50" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label for="purchaseDate">Purchase Date *</label>
+              <input type="date" id="purchaseDate" name="purchaseDate" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="receipt">Receipt Image (Optional)</label>
+            <input type="file" id="receipt" name="receipt" accept="image/*" />
+            <p class="form-hint">Upload your device receipt (JPG, PNG, max 5MB)</p>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">Add Laptop</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+</footer>
+
+<script>
+  document.getElementById('addLaptopForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      alert('Please login first');
+      window.location.href = '/login';
+      return;
+    }
+
+    const formData = new FormData(e.target);
+
+    try {
+      const response = await fetch('/api/laptop', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Laptop added successfully!');
+        window.location.href = '/dashboard';
+      } else {
+        alert(`Error: ${result.message || 'Failed to add laptop'}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to add laptop: ' + error.message);
+    }
+  });
+
+  // Set max date to today
+  document.getElementById('purchaseDate').max = new Date().toISOString().split('T')[0];
+</script>
+<script src="/js/main.js"></script>
+</body>
+</html>
