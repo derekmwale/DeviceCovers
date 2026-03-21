@@ -1,0 +1,2 @@
+# SafeTech
+Laptop Insurance Platform
