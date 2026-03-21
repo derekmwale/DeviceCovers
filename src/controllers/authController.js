@@ -21,7 +21,7 @@ exports.register = async (req, res) => {
     // Check if user exists with timeout
     let userExists;
     try {
-      userExists = await User.findOne({ email }).maxTimeMS(5000);
+      userExists = await User.findOne({ email }).maxTimeMS(8000);
     } catch (dbError) {
       console.error('Database query error:', dbError.message);
       // If database error, try to proceed anyway
@@ -42,7 +42,19 @@ exports.register = async (req, res) => {
       country,
     });
 
-    await user.save();
+    // Save with extended timeout
+    try {
+      await user.save();
+    } catch (saveError) {
+      console.error('Save error:', saveError.message);
+      // If it's a timeout error, give user helpful message
+      if (saveError.message.includes('timeout') || saveError.message.includes('buffering')) {
+        return res.status(503).json({ 
+          message: 'Server is temporarily busy. Please try again in a moment.' 
+        });
+      }
+      throw saveError;
+    }
 
     const token = generateToken(user._id);
 

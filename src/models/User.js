@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Email is required'],
       unique: true,
+      sparse: true,
       lowercase: true,
       match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email'],
     },
@@ -60,6 +61,11 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Create indexes for better query performance
+userSchema.index({ email: 1 }, { unique: true, sparse: true });
+userSchema.index({ createdAt: -1 });
+userSchema.index({ active: 1 });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

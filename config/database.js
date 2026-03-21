@@ -11,14 +11,15 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       maxPoolSize: 10,
-      minPoolSize: 5,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 10000,
+      minPoolSize: 2,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 60000,
+      connectTimeoutMS: 30000,
       retryWrites: true,
       w: 'majority',
       maxIdleTimeMS: 60000,
-      appName: 'SafeTech'
+      appName: 'SafeTech',
+      family: 4, // Force IPv4
     });
     
     console.log('✅ MongoDB Connected Successfully');
