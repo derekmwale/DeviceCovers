@@ -120,20 +120,16 @@
   let currentLaptopId = null;
 
   async function apiCall(endpoint, options = {}) {
-    const token = localStorage.getItem('token');
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers
     };
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     const response = await fetch(endpoint, {
       method: options.method || 'GET',
       headers,
       body: options.body,
+      credentials: 'include', // Include session cookies
     });
 
     if (response.status === 401) {

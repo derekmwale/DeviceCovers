@@ -19,7 +19,7 @@ let sessionStore;
 // Create session store with MongoDB if URI is available
 if (process.env.MONGODB_URI) {
   try {
-    const MongoStore = require('connect-mongo');
+    const { MongoStore } = require('connect-mongo');
     sessionStore = new MongoStore({
       mongoUrl: process.env.MONGODB_URI,
       touchAfter: 24 * 3600, // Lazy session update (24 hours)

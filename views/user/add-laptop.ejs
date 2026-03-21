@@ -94,23 +94,14 @@
 <script>
   document.getElementById('addLaptopForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      alert('Please login first');
-      window.location.href = '/login';
-      return;
-    }
 
     const formData = new FormData(e.target);
 
     try {
       const response = await fetch('/api/laptop', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
+        body: formData,
+        credentials: 'include', // Include session cookies
       });
 
       const result = await response.json();
