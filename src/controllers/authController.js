@@ -8,13 +8,23 @@ const generateToken = (userId) => {
   });
 };
 
+// Helper: Check MongoDB Connection
+const checkDBConnection = () => {
+  const mongoose = require('mongoose');
+  if (mongoose.connection.readyState !== 1) {
+    throw new Error('Database connection not established');
+  }
+};
+
 // Register User
 exports.register = async (req, res) => {
   try {
+    checkDBConnection();
+    
     const { firstName, lastName, email, password, phone, country } = req.body;
 
-    // Check if user exists
-    const userExists = await User.findOne({ email });
+    // Check if user exists with timeout
+    const userExists = await User.findOne({ email }).maxTimeMS(5000);
     if (userExists) {
       return res.status(400).json({ message: 'Email already registered' });
     }
@@ -46,10 +56,11 @@ exports.register = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
 // Login User
 exports.login = async (req, res) => {
   try {
+    checkDBConnection();
+    
     const { email, password } = req.body;
 
     // Validate inputs
@@ -57,8 +68,8 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // Check if user exists and get password field
-    const user = await User.findOne({ email }).select('+password');
+    // Check if user exists and get password field with timeout
+    const user = await User.findOne({ email }).select('+password').maxTimeMS(5000);
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
