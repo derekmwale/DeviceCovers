@@ -925,10 +925,25 @@
       ...options.headers,
     };
 
+    console.log('🔌 API Call:', {
+      url,
+      method: options.method || 'GET',
+      headers,
+      bodyLength: options.body ? options.body.length : 0,
+      bodyPreview: options.body ? options.body.substring(0, 100) : 'none'
+    });
+
     const response = await fetch(url, {
       ...options,
       headers,
       credentials: 'include',
+    });
+
+    console.log('📨 API Response:', {
+      url,
+      status: response.status,
+      ok: response.ok,
+      contentType: response.headers.get('content-type')
     });
 
     if (!response.ok) {
@@ -936,6 +951,7 @@
         window.location.href = '/login';
       }
       const error = await response.json();
+      console.error('❌ API Error:', error);
       throw new Error(error.message || 'API Error');
     }
 
@@ -1067,27 +1083,84 @@
 
   async function confirmPlan() {
     try {
-      document.getElementById('confirmBtn').disabled = true;
-      document.getElementById('confirmBtn').textContent = 'Processing...';
+      // Double-check state validity (defensive programming)
+      const laptopId = state.selectedLaptopId;
+      const planType = state.selectedPlanType;
 
-      await apiCall('/api/plan', {
-        method: 'POST',
-        body: JSON.stringify({
-          laptopId: state.selectedLaptopId,
-          planType: state.selectedPlanType
-        })
+      console.log('🔐 Final Validation Check:',  {
+        laptopId: laptopId,
+        planType: planType,
+        laptopIdValid: !!laptopId && laptopId.length > 0,
+        planTypeValid: !!planType && ['basic', 'premium', 'pro'].includes(planType)
       });
 
+      // Validate laptop ID
+      if (!laptopId || typeof laptopId !== 'string' || laptopId.trim() === '') {
+        alert('⚠️ No laptop selected. Please go back and select a laptop.');
+        goToStep(1);
+        return;
+      }
+
+      // Validate plan type
+      if (!planType || !['basic', 'premium', 'pro'].includes(planType)) {
+        alert('⚠️ Invalid plan type selected. Please go back and select a valid plan.');
+        goToStep(2);
+        return;
+      }
+
+      const submitBtn = document.getElementById('confirmBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing...';
+
+      // Build and submit payload
+      const payload = {
+        laptopId: laptopId.trim(),
+        planType: planType.toLowerCase()
+      };
+      
+      console.log('📤 Final Payload:', payload);
+
+      const response = await apiCall('/api/plan', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      console.log('✅ Plan created successfully:', response);
       alert('✓ Plan activated successfully! Your device is now covered.');
       window.location.href = '/plans';
     } catch (error) {
-      alert('Error creating plan: ' + error.message);
-      document.getElementById('confirmBtn').disabled = false;
-      document.getElementById('confirmBtn').textContent = '✓ Confirm & Activate Plan';
+      console.error('❌ Plan creation error:', error);
+      let errorMsg = error.message;
+      
+      // Provide specific feedback
+      if (errorMsg.includes('Missing')) {
+        errorMsg = 'Required fields are missing. Please complete all steps.';
+      } else if (errorMsg.includes('Laptop not found')) {
+        errorMsg = 'The selected laptop was not found. Please select again.';
+      }
+      
+      alert('Error: ' + errorMsg);
+      
+      const submitBtn = document.getElementById('confirmBtn');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '✓ Confirm & Activate Plan';
+      }
     }
   }
 
   function goToStep(stepNum) {
+    // Validate that we can go to this step
+    if (stepNum === 2 && !state.selectedLaptopId) {
+      alert('⚠️ Please select a laptop first');
+      return;
+    }
+    
+    if (stepNum === 3 && (!state.selectedLaptopId || !state.selectedPlanType)) {
+      alert('⚠️ Please complete all previous steps');
+      return;
+    }
+
     document.querySelectorAll('.wizard-step').forEach(step => {
       step.classList.remove('active');
     });

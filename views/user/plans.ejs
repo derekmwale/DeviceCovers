@@ -632,10 +632,25 @@
       ...options.headers,
     };
 
+    console.log('🔌 API Call:', {
+      url,
+      method: options.method || 'GET',
+      headers,
+      bodyLength: options.body ? options.body.length : 0,
+      bodyPreview: options.body ? options.body.substring(0, 100) : 'none'
+    });
+
     const response = await fetch(url, {
       ...options,
       headers,
       credentials: 'include',
+    });
+
+    console.log('📨 API Response:', {
+      url,
+      status: response.status,
+      ok: response.ok,
+      contentType: response.headers.get('content-type')
     });
 
     if (!response.ok) {
@@ -643,6 +658,7 @@
         window.location.href = '/login';
       }
       const error = await response.json();
+      console.error('❌ API Error:', error);
       throw new Error(error.message || 'API Error');
     }
 
@@ -731,50 +747,69 @@
   }
 
   async function activatePlan() {
-    if (!selectedLaptopId || !selectedPlanType) {
-      alert('Please select both a device and a plan');
-      return;
-    }
-
     try {
+      // Double-check state validity (defensive programming)
+      const laptopId = selectedLaptopId;
+      const planType = selectedPlanType;
+
+      console.log('🔐 Final Validation Check:', {
+        laptopId: laptopId,
+        planType: planType,
+        laptopIdValid: !!laptopId && laptopId.length > 0,
+        planTypeValid: !!planType && ['basic', 'premium', 'pro'].includes(planType)
+      });
+
+      // Validate laptop ID
+      if (!laptopId || typeof laptopId !== 'string' || laptopId.trim() === '') {
+        alert('⚠️ No device selected. Please select a device first.');
+        return;
+      }
+
+      // Validate plan type
+      if (!planType || !['basic', 'premium', 'pro'].includes(planType)) {
+        alert('⚠️ Invalid plan type selected. Please select a valid plan.');
+        return;
+      }
+
       const button = event.target;
       button.disabled = true;
       button.textContent = 'Activating...';
 
-      const laptop = allLaptops.find(l => l._id === selectedLaptopId);
-      
-      let coverageAmount = 0;
-      let monthlyPremium = 0;
+      // Build correct payload matching backend expectations
+      const payload = {
+        laptopId: laptopId.trim(),
+        planType: planType.toLowerCase()
+      };
 
-      if (selectedPlanType === 'basic') {
-        coverageAmount = 5000;
-        monthlyPremium = 50;
-      } else if (selectedPlanType === 'premium') {
-        coverageAmount = 15000;
-        monthlyPremium = 100;
-      } else if (selectedPlanType === 'pro') {
-        coverageAmount = Math.min(laptop.purchaseValue * 0.9, 5000000);
-        monthlyPremium = 150;
-      }
+      console.log('📤 Final Payload:', payload);
 
-      await apiCall('/api/plan', {
+      const response = await apiCall('/api/plan', {
         method: 'POST',
-        body: JSON.stringify({
-          laptop: selectedLaptopId,
-          planType: selectedPlanType,
-          coverageAmount: coverageAmount,
-          monthlyPremium: monthlyPremium
-        })
+        body: JSON.stringify(payload)
       });
 
+      console.log('✅ Plan activated successfully:', response);
       alert('✓ Plan activated successfully! Your device is now covered.');
       resetSelection();
       loadActivePlans();
       loadDevices();
     } catch (error) {
-      alert('Error: ' + error.message);
-      event.target.disabled = false;
-      event.target.textContent = 'Activate Plan';
+      console.error('❌ Plan activation error:', error);
+      let errorMsg = error.message;
+      
+      // Provide specific feedback
+      if (errorMsg.includes('Missing')) {
+        errorMsg = 'Required fields are missing. Please select both a device and a plan.';
+      } else if (errorMsg.includes('Laptop not found')) {
+        errorMsg = 'The selected device was not found. Please select again.';
+      }
+      
+      alert('Error: ' + errorMsg);
+      
+      if (event.target) {
+        event.target.disabled = false;
+        event.target.textContent = 'Activate Plan';
+      }
     }
   }
 

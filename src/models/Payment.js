@@ -22,7 +22,7 @@ const paymentSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['stripe', 'paypal', 'manual'],
+      enum: ['stripe', 'paypal', 'manual', 'pending'],
       required: true,
     },
     stripeTransactionId: String,

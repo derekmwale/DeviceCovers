@@ -5,11 +5,35 @@ const Payment = require('../models/Payment');
 // Create Insurance Plan
 exports.createPlan = async (req, res) => {
   try {
-    const { laptopId, planType } = req.body;
+    const { laptopId, planType } = req.body || {};
+
+    // Validate input with specific error messages
+    if (!laptopId || !planType) {
+      return res.status(400).json({ 
+        message: 'Missing required fields',
+        details: {
+          laptopId: !laptopId ? 'required' : '✓',
+          planType: !planType ? 'required' : '✓'
+        }
+      });
+    }
 
     const laptop = await Laptop.findById(laptopId);
-    if (!laptop || laptop.user.toString() !== req.userId) {
-      return res.status(404).json({ message: 'Laptop not found' });
+    
+    if (!laptop) {
+      return res.status(404).json({ 
+        message: 'Laptop not found. Please select a valid laptop.' 
+      });
+    }
+    
+    // Check ownership
+    const laptopUserId = laptop.user.toString();
+    const reqUserId = req.userId.toString();
+    
+    if (laptopUserId !== reqUserId) {
+      return res.status(403).json({ 
+        message: 'You are not authorized to create a plan for this laptop.' 
+      });
     }
 
     const plan = new InsurancePlan({

@@ -62,12 +62,20 @@ const insurancePlanSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Calculate coverage details based on plan type
-insurancePlanSchema.pre('save', function (next) {
+// Calculate coverage details based on plan type - runs BEFORE validation
+insurancePlanSchema.pre('validate', function (next) {
   const value = this.deviceValue;
 
+  if (!value) {
+    return next(new Error('Device value is required'));
+  }
+
+  if (!this.planType) {
+    return next(new Error('Plan type is required'));
+  }
+
   if (this.planType === 'basic') {
-    this.coverageAmount = Math.min(value, 5000); // Max ZMW 5000
+    this.coverageAmount = Math.min(value, 5000);
     this.monthlyPremium = Math.max(5, value * 0.03);
     this.coverageDetails = {
       accidentalDamage: false,
@@ -77,7 +85,7 @@ insurancePlanSchema.pre('save', function (next) {
       extendedWarranty: false,
     };
   } else if (this.planType === 'premium') {
-    this.coverageAmount = Math.min(value, 1500);
+    this.coverageAmount = Math.min(value, 15000);
     this.monthlyPremium = Math.max(10, value * 0.06);
     this.coverageDetails = {
       accidentalDamage: true,
@@ -99,6 +107,27 @@ insurancePlanSchema.pre('save', function (next) {
   }
 
   this.deductible = this.planType === 'basic' ? 100 : this.planType === 'premium' ? 50 : 25;
+
+  next();
+});
+
+// Also run on save for extra safety
+insurancePlanSchema.pre('save', function (next) {
+  // Make sure values are set before saving
+  if (!this.coverageAmount || !this.monthlyPremium) {
+    const value = this.deviceValue;
+    
+    if (this.planType === 'basic') {
+      this.coverageAmount = Math.min(value, 5000);
+      this.monthlyPremium = Math.max(5, value * 0.03);
+    } else if (this.planType === 'premium') {
+      this.coverageAmount = Math.min(value, 15000);
+      this.monthlyPremium = Math.max(10, value * 0.06);
+    } else if (this.planType === 'pro') {
+      this.coverageAmount = value * 0.9;
+      this.monthlyPremium = Math.max(15, value * 0.1);
+    }
+  }
 
   next();
 });
