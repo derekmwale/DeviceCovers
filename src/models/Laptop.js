@@ -23,7 +23,7 @@ const laptopSchema = new mongoose.Schema(
     purchaseValue: {
       type: Number,
       required: [true, 'Purchase value is required'],
-      min: [50, 'Value must be at least $50'],
+      min: [500, 'Value must be at least ZMW 500'],
     },
     purchaseDate: {
       type: Date,

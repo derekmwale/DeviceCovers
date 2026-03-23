@@ -164,7 +164,7 @@
           <div class="laptop-card-content">
             <h3>${laptop.brand} ${laptop.model}</h3>
             <p><strong>Serial:</strong> ${laptop.serialNumber}</p>
-            <p><strong>Value:</strong> $${laptop.purchaseValue.toFixed(2)}</p>
+            <p><strong>Value:</strong> ZMW ${laptop.purchaseValue.toFixed(2)}</p>
             <p><strong>Condition:</strong> <span class="badge badge-${laptop.condition}">${laptop.condition}</span></p>
           </div>
           <div class="select-indicator">
@@ -204,7 +204,7 @@
   // Display Plans
   function displayPlans() {
     document.getElementById('selectedDeviceName').textContent = state.selectedLaptop.name;
-    document.getElementById('selectedDeviceValue').textContent = '$' + state.selectedLaptop.value.toFixed(2);
+    document.getElementById('selectedDeviceValue').textContent = 'ZMW ' + state.selectedLaptop.value.toFixed(2);
 
     const plansHtml = state.suggestedPlans.map(plan => `
       <div class="plan-card-comparison" onclick="selectPlan('${plan.type}', this)">
@@ -212,15 +212,15 @@
           ${plan.type === 'basic' ? '🛡️' : plan.type === 'premium' ? '⭐' : '👑'}
         </div>
         <h3>${plan.name}</h3>
-        <p class="plan-price">$${plan.monthly.toFixed(2)}<span>/month</span></p>
+        <p class="plan-price">ZMW ${plan.monthly.toFixed(2)}<span>/month</span></p>
         <div class="plan-features">
           <div class="feature">
             <strong>Coverage</strong>
-            <p>$${plan.coverage.toFixed(2)}</p>
+            <p>ZMW ${plan.coverage.toFixed(2)}</p>
           </div>
           <div class="feature">
             <strong>Deductible</strong>
-            <p>$${(plan.coverage * 0.1).toFixed(2)}</p>
+            <p>ZMW ${(plan.coverage * 0.1).toFixed(2)}</p>
           </div>
         </div>
         <p class="plan-description">${plan.description}</p>
@@ -263,8 +263,8 @@
     document.getElementById('reviewDescription').textContent = plan.description;
 
     const coverageItems = {
-      basic: ['Water damage protection', 'Up to $500 coverage', 'Email support'],
-      premium: ['Theft & damage protection', 'Up to $1,500 coverage', '24/7 phone support', 'Water & liquid damage'],
+      basic: ['Water damage protection', 'Up to ZMW 5,000 coverage', 'Email support'],
+      premium: ['Theft & damage protection', 'Up to ZMW 15,000 coverage', '24/7 phone support', 'Water & liquid damage'],
       pro: ['Complete coverage', '90% device value', 'Loss protection', 'Extended warranty', 'Priority support']
     };
 

@@ -67,7 +67,7 @@ insurancePlanSchema.pre('save', function (next) {
   const value = this.deviceValue;
 
   if (this.planType === 'basic') {
-    this.coverageAmount = Math.min(value, 500); // Max $500
+    this.coverageAmount = Math.min(value, 5000); // Max ZMW 5000
     this.monthlyPremium = Math.max(5, value * 0.03);
     this.coverageDetails = {
       accidentalDamage: false,

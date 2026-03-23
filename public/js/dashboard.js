@@ -78,8 +78,8 @@ async function loadOverview() {
     const monthlyPayment = plans.reduce((sum, p) => sum + (p.monthlyPremium || 0), 0);
 
     document.getElementById('activePolicies').textContent = activePlans;
-    document.getElementById('totalCoverage').textContent = `$${totalCoverage.toFixed(2)}`;
-    document.getElementById('monthlyPayment').textContent = `$${monthlyPayment.toFixed(2)}`;
+    document.getElementById('totalCoverage').textContent = `ZMW ${totalCoverage.toFixed(2)}`;
+    document.getElementById('monthlyPayment').textContent = `ZMW ${monthlyPayment.toFixed(2)}`;
     document.getElementById('claimsStatus').textContent = claims.paid || 0;
   } catch (error) {
     console.error('Error loading overview:', error);
@@ -97,7 +97,7 @@ async function loadLaptops() {
       <div class="laptop-card">
         <h3>${laptop.brand} ${laptop.model}</h3>
         <p><strong>Serial:</strong> ${laptop.serialNumber}</p>
-        <p><strong>Value:</strong> $${laptop.purchaseValue}</p>
+        <p><strong>Value:</strong> ZMW ${laptop.purchaseValue}</p>
         <p><strong>Status:</strong> <span class="badge badge-${laptop.status}">${laptop.status}</span></p>
         <div class="card-actions">
           <button class="btn btn-sm" onclick="viewLaptop('${laptop._id}')">View</button>
@@ -135,7 +135,7 @@ async function selectPlan(laptopId) {
             <div class="plan-option">
               <input type="radio" name="planType" value="${plan.type}" required />
               <label>
-                <strong>${plan.name}</strong> - $${plan.monthly.toFixed(2)}/mo
+                <strong>${plan.name}</strong> - ZMW ${plan.monthly.toFixed(2)}/mo
                 <p>${plan.description}</p>
                 <p>Coverage: $${plan.coverage.toFixed(2)}</p>
               </label>

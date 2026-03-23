@@ -149,7 +149,7 @@
   async function loadLaptops() {
     try {
       const data = await apiCall('/api/laptop');
-      allLaptops = data.data || [];
+      allLaptops = Array.isArray(data) ? data : (data.data || []);
       renderLaptops(allLaptops);
     } catch (error) {
       console.error('Error loading laptops:', error);
@@ -183,8 +183,8 @@
             <span class="value">${laptop.serialNumber}</span>
           </div>
           <div class="info-row">
-            <span class="label">Purchase Value:</span>
-            <span class="value">$${laptop.purchaseValue.toFixed(2)}</span>
+            <span class="label">💰 Purchase Value</span>
+            <span class="value">ZMW ${laptop.purchaseValue.toFixed(2)}</span>
           </div>
           <div class="info-row">
             <span class="label">Purchase Date:</span>
@@ -343,6 +343,10 @@
     );
     renderLaptops(filtered);
   });
+
+  // Load laptops on page load
+  document.addEventListener('DOMContentLoaded', loadLaptops);
+
 
   // Close modals on outside click
   window.addEventListener('click', (e) => {

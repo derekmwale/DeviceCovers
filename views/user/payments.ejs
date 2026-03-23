@@ -29,7 +29,7 @@
       <div class="header-action">
         <div class="quick-stat">
           <span class="label">Total Paid</span>
-          <span class="value" id="totalPaidQuick">$0.00</span>
+          <span class="value" id="totalPaidQuick">ZMW 0.00</span>
         </div>
       </div>
     </div>
@@ -39,7 +39,7 @@
       <div class="stat-card">
         <div class="stat-icon">💰</div>
         <h3>Total Paid</h3>
-        <p class="stat-value" id="totalPaid">$0.00</p>
+        <p class="stat-value" id="totalPaid">ZMW 0.00</p>
       </div>
       <div class="stat-card">
         <div class="stat-icon">⏳</div>
@@ -49,7 +49,7 @@
       <div class="stat-card">
         <div class="stat-icon">📊</div>
         <h3>Monthly Average</h3>
-        <p class="stat-value" id="monthlyAvg">$0.00</p>
+        <p class="stat-value" id="monthlyAvg">ZMW 0.00</p>
       </div>
     </div>
 
@@ -137,7 +137,7 @@
           return `
             <tr>
               <td>${new Date(payment.createdAt).toLocaleDateString()}</td>
-              <td class="amount">$${(payment.amount || 0).toFixed(2)}</td>
+              <td class="amount">ZMW ${(payment.amount || 0).toFixed(2)}</td>
               <td>${payment.plan?.planType?.toUpperCase() || 'N/A'}</td>
               <td>
                 <span class="badge badge-${payment.status}">
@@ -158,12 +158,12 @@
       document.getElementById('paymentsTableBody').innerHTML = html;
 
       // Update stats
-      document.getElementById('totalPaid').textContent = '$' + totalPaid.toFixed(2);
+      document.getElementById('totalPaid').textContent = 'ZMW ' + totalPaid.toFixed(2);
       document.getElementById('pendingCount').textContent = pendingCount;
       
       if (payments.length > 0) {
         const avgPaid = totalPaid / payments.length;
-        document.getElementById('monthlyAvg').textContent = '$' + avgPaid.toFixed(2);
+        document.getElementById('monthlyAvg').textContent = 'ZMW ' + avgPaid.toFixed(2);
       }
 
       // Show pending alert if needed
@@ -188,7 +188,7 @@
             <button class="modal-close" onclick="closeModal()">&times;</button>
             <h2>Process Payment</h2>
             <div class="payment-details">
-              <p><strong>Amount:</strong> $${payment.amount.toFixed(2)}</p>
+              <p><strong>Amount:</strong> ZMW ${payment.amount.toFixed(2)}</p>
               <p><strong>Plan:</strong> ${payment.plan?.planType?.toUpperCase()}</p>
               <p><strong>Due Date:</strong> ${new Date(payment.dueDate).toLocaleDateString()}</p>
             </div>
@@ -207,7 +207,7 @@
                   <input type="text" id="cvv" placeholder="123" required />
                 </div>
               </div>
-              <button type="submit" class="btn btn-primary">Pay $${payment.amount.toFixed(2)}</button>
+              <button type="submit" class="btn btn-primary">Pay ZMW ${payment.amount.toFixed(2)}</button>
             </form>
           </div>
         </div>

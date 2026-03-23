@@ -112,7 +112,7 @@ exports.trackClaim = async (req, res) => {
         ? [{ status: 'under_review', date: claim.reviewDate, description: 'Under review by claims team' }]
         : []),
       ...(claim.status === 'approved' || claim.status === 'paid'
-        ? [{ status: 'approved', date: claim.reviewDate, description: `Approved for $${claim.approvedAmount}` }]
+        ? [{ status: 'approved', date: claim.reviewDate, description: `Approved for ZMW ${claim.approvedAmount}` }]
         : []),
       ...(claim.status === 'paid'
         ? [{ status: 'paid', date: claim.paymentDate, description: 'Payment processed' }]
