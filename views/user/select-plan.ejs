@@ -3,8 +3,784 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Select Insurance Plan - SafeTech</title>
+  <title>Get Insurance Plan - SafeTech</title>
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .page-content {
+      padding: var(--space-8) 0;
+      min-height: calc(100vh - 200px);
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+
+    .plan-wizard-wrapper {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: var(--space-8);
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 var(--space-8);
+    }
+
+    .wizard-sidebar {
+      background: var(--bg-primary);
+      border-radius: 16px;
+      padding: var(--space-6);
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+    }
+
+    .wizard-sidebar:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .wizard-sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .wizard-sidebar-nav a {
+      padding: var(--space-3) var(--space-4);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.95rem;
+      position: relative;
+    }
+
+    .wizard-sidebar-nav a::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: var(--primary);
+      border-radius: 0 2px 2px 0;
+      transition: height 0.3s ease;
+    }
+
+    .wizard-sidebar-nav a:hover,
+    .wizard-sidebar-nav a.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      transform: translateX(4px);
+    }
+
+    .wizard-sidebar-nav a.active::before {
+      height: 24px;
+    }
+
+    .plan-wizard {
+      min-height: 500px;
+    }
+
+    .wizard-header {
+      margin-bottom: var(--space-8);
+      animation: slideDown 0.5s ease;
+    }
+
+    .wizard-header h1 {
+      font-size: 2.4rem;
+      color: #0f172a;
+      font-weight: 800;
+      margin-bottom: var(--space-2);
+      background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .wizard-header p {
+      color: #64748b;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .wizard-step {
+      display: none;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    .wizard-step.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Step 1: Device Selection */
+    .devices-intro {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f5f7fa 100%);
+      padding: var(--space-8);
+      border-radius: 16px;
+      border: 2px solid #bfdbfe;
+      margin-bottom: var(--space-8);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 102, 255, 0.08);
+    }
+
+    .devices-intro::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(0, 102, 255, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .devices-intro h2 {
+      font-size: 1.5rem;
+      color: #0f172a;
+      margin-bottom: var(--space-3);
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+    }
+
+    .devices-intro p {
+      color: #475569;
+      line-height: 1.7;
+      margin-bottom: var(--space-2);
+      position: relative;
+      z-index: 1;
+      font-weight: 500;
+    }
+
+    .laptops-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+      animation: fadeInUp 0.6s ease 0.1s backwards;
+    }
+
+    .laptop-card-selectable {
+      padding: var(--space-6);
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .laptop-card-selectable::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.05) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .laptop-card-selectable:hover {
+      border-color: #0066ff;
+      box-shadow: 0 16px 40px rgba(0, 102, 255, 0.15);
+      transform: translateY(-8px);
+    }
+
+    .laptop-card-selectable:hover::before {
+      opacity: 1;
+    }
+
+    .laptop-card-selectable.selected {
+      border-color: #0066ff;
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.03) 0%, rgba(0, 102, 255, 0.01) 100%);
+      box-shadow: 0 16px 40px rgba(0, 102, 255, 0.2), inset 0 0 0 2px #0066ff;
+      transform: scale(1.02);
+    }
+
+    .laptop-card-selectable h3 {
+      font-size: 1.25rem;
+      color: #0f172a;
+      margin-bottom: var(--space-2);
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+    }
+
+    .laptop-card-selectable p {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: var(--space-1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .select-indicator {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2.5px solid #cbd5e1;
+      transition: all 0.3s ease;
+      color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      z-index: 2;
+    }
+
+    .laptop-card-selectable.selected .select-indicator {
+      background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+      border-color: #0052cc;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4);
+      transform: scale(1.1);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-excellent {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      color: #065f46;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    }
+
+    .badge-good {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      color: #1e40af;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+    }
+
+    .badge-fair {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #92400e;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+    }
+
+    /* Selected Device Info */
+    .selected-device-info {
+      background: #f8fafc;
+      padding: var(--space-6);
+      border-radius: 0.5rem;
+      border-left: 4px solid #0066ff;
+      margin-bottom: var(--space-8);
+    }
+
+    .selected-device-info p {
+      margin: var(--space-2) 0;
+      font-size: 0.95rem;
+      color: #0f172a;
+    }
+
+    .selected-device-info strong {
+      color: #0052cc;
+      font-weight: 600;
+    }
+
+    /* Plans Comparison */
+    .plans-comparison {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+      animation: fadeInUp 0.6s ease 0.1s backwards;
+    }
+
+    .plan-card-comparison {
+      padding: var(--space-8);
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #ffffff;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .plan-card-comparison::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #0066ff, #0052cc);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .plan-card-comparison:hover {
+      border-color: #0066ff;
+      box-shadow: 0 20px 48px rgba(0, 102, 255, 0.18);
+      transform: translateY(-12px);
+    }
+
+    .plan-card-comparison:hover::before {
+      transform: scaleX(1);
+    }
+
+    .plan-card-comparison.selected {
+      border-color: #0066ff;
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.05) 0%, rgba(0, 102, 255, 0.02) 100%);
+      box-shadow: 0 20px 48px rgba(0, 102, 255, 0.25), inset 0 0 0 2px #0066ff;
+    }
+
+    .plan-card-comparison.selected::before {
+      transform: scaleX(1);
+    }
+
+    .plan-icon {
+      font-size: 3.5rem;
+      margin-bottom: var(--space-4);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .plan-card-comparison h3 {
+      font-size: 1.5rem;
+      color: #0f172a;
+      margin-bottom: var(--space-2);
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .plan-price {
+      font-size: 2.4rem;
+      background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+      margin-bottom: var(--space-1);
+      letter-spacing: -0.5px;
+    }
+
+    .plan-price span {
+      font-size: 0.9rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .plan-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+      margin: var(--space-6) 0;
+      padding: var(--space-4) 0;
+      border-top: 1px solid #f1f5f9;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .feature {
+      text-align: center;
+      padding: var(--space-3);
+      background: #f8fafc;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .plan-card-comparison:hover .feature {
+      background: rgba(0, 102, 255, 0.05);
+    }
+
+    .feature strong {
+      display: block;
+      color: #0f172a;
+      font-size: 0.9rem;
+      margin-bottom: var(--space-1);
+      font-weight: 700;
+    }
+
+    .feature p {
+      color: #64748b;
+      font-size: 1rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .plan-description {
+      color: #475569;
+      font-size: 0.95rem;
+      margin: var(--space-4) 0;
+      flex-grow: 1;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .plan-highlights {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin: var(--space-4) 0;
+    }
+
+    .highlight {
+      color: #10b981;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    /* Review Card */
+    .review-card {
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: var(--space-8);
+      margin-bottom: var(--space-8);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: fadeInUp 0.6s ease 0.2s backwards;
+    }
+
+    .review-card:hover {
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .review-section {
+      margin-bottom: var(--space-8);
+      padding-bottom: var(--space-6);
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .review-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .review-section h3 {
+      font-size: 1.2rem;
+      color: #0f172a;
+      margin-bottom: var(--space-4);
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-4) 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .review-row:last-child {
+      border-bottom: none;
+    }
+
+    .review-row .label {
+      color: #64748b;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .review-row .value {
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 1rem;
+      background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .coverage-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .coverage-list li {
+      padding: var(--space-4) var(--space-4);
+      background: linear-gradient(135deg, rgba(209, 250, 229, 0.3) 0%, rgba(167, 243, 208, 0.15) 100%);
+      border-radius: 10px;
+      border-left: 4px solid #10b981;
+      color: #475569;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      line-height: 1.5;
+    }
+
+    .coverage-list li:hover {
+      background: linear-gradient(135deg, rgba(209, 250, 229, 0.4) 0%, rgba(167, 243, 208, 0.25) 100%);
+      transform: translateX(4px);
+    }
+
+    .coverage-list li strong {
+      color: #10b981;
+      margin-right: var(--space-2);
+      font-weight: 700;
+    }
+
+    /* Navigation Buttons */
+    .step-nav {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-8);
+      flex-wrap: wrap;
+      animation: fadeInUp 0.6s ease 0.3s backwards;
+    }
+
+    .step-nav .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: var(--space-4) var(--space-8);
+      border-radius: 10px;
+      font-weight: 700;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 1rem;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .step-nav .btn.primary {
+      background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+      color: white;
+    }
+
+    .step-nav .btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 102, 255, 0.3);
+    }
+
+    .step-nav .btn.primary:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(0, 102, 255, 0.15);
+    }
+
+    .step-nav .btn.secondary {
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 2px solid #e2e8f0;
+    }
+
+    .step-nav .btn.secondary:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: var(--space-12);
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-radius: 16px;
+      border: 2px dashed #cbd5e1;
+      transition: all 0.3s ease;
+    }
+
+    .empty-state p {
+      color: #64748b;
+      margin-bottom: var(--space-4);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .error-message {
+      padding: var(--space-6);
+      background: linear-gradient(135deg, rgba(254, 226, 226, 0.5) 0%, rgba(254, 202, 202, 0.3) 100%);
+      border: 2px solid #fca5a5;
+      border-radius: 10px;
+      color: #7f1d1d;
+      text-align: center;
+      margin-bottom: var(--space-8);
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .plan-wizard-wrapper {
+        grid-template-columns: 220px 1fr;
+        gap: var(--space-6);
+        padding: 0 var(--space-6);
+      }
+
+      .laptops-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      }
+
+      .plans-comparison {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .plan-card-comparison {
+        padding: var(--space-6);
+      }
+
+      .plan-wizard-header h1 {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .plan-wizard-wrapper {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+        padding: 0 var(--space-4);
+      }
+
+      .wizard-sidebar {
+        display: none;
+      }
+
+      .wizard-header h1 {
+        font-size: 1.8rem;
+        margin-bottom: var(--space-3);
+      }
+
+      .wizard-header p {
+        font-size: 0.95rem;
+      }
+
+      .page-content {
+        padding: var(--space-6) 0;
+      }
+
+      .laptops-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-5);
+      }
+
+      .plans-comparison {
+        grid-template-columns: 1fr;
+        gap: var(--space-5);
+      }
+
+      .plan-card-comparison {
+        padding: var(--space-6);
+      }
+
+      .plan-icon {
+        font-size: 2.8rem;
+      }
+
+      .plan-price {
+        font-size: 2rem;
+      }
+
+      .step-nav {
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .step-nav .btn {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .plan-features {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+      }
+
+      .coverage-list {
+        grid-template-columns: 1fr;
+      }
+
+      .review-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-2);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-content {
+        padding: var(--space-4) 0;
+      }
+
+      .plan-wizard-wrapper {
+        padding: 0 var(--space-4);
+      }
+
+      .wizard-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .laptop-card-selectable {
+        padding: var(--space-4);
+      }
+
+      .plan-card-comparison {
+        padding: var(--space-6);
+      }
+
+      .review-card {
+        padding: var(--space-6);
+      }
+    }
+  </style>
 </head>
 <body>
 <nav class="navbar">
@@ -19,10 +795,12 @@
     </ul>
   </div>
 </nav>
+
 <div class="page-content">
-  <div class="dashboard">
-    <div class="sidebar">
-      <nav class="sidebar-nav">
+  <div class="plan-wizard-wrapper">
+    <!-- Sidebar -->
+    <div class="wizard-sidebar">
+      <nav class="wizard-sidebar-nav">
         <a href="/dashboard" class="nav-item">📊 Overview</a>
         <a href="/my-laptops" class="nav-item">💻 My Laptops</a>
         <a href="/add-laptop" class="nav-item">➕ Add Laptop</a>
@@ -32,30 +810,38 @@
       </nav>
     </div>
 
-    <div class="dashboard-content">
-  <div class="select-plan-container">
+    <!-- Main Content -->
     <div class="plan-wizard">
-      <!-- Step 1: Select Laptop -->
+      <!-- Step 1: Select Device -->
       <div id="step1" class="wizard-step active">
-        <div class="step-header">
-          <h1>Step 1: Select Your Device</h1>
+        <div class="wizard-header">
+          <h1>🖥️ Select Your Device</h1>
           <p>Choose the laptop you want to insure</p>
         </div>
+
+        <div class="devices-intro">
+          <h2>Ready to Protect Your Laptop?</h2>
+          <p>Select one of your registered devices from below to start the insurance plan selection process. Don't see your device? Add it first.</p>
+        </div>
+
         <div id="laptopsGrid" class="laptops-grid"></div>
+
         <div class="step-nav">
-          <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+          <a href="/dashboard" class="btn btn-secondary">← Back to Dashboard</a>
           <a href="/add-laptop" class="btn btn-outline">+ Add New Laptop</a>
         </div>
       </div>
 
-      <!-- Step 2: Choose Plan Type -->
+      <!-- Step 2: Choose Plan -->
       <div id="step2" class="wizard-step">
-        <div class="step-header">
-          <h1>Step 2: Choose Your Plan</h1>
-          <div class="selected-device-info">
-            <p><strong>Selected Device:</strong> <span id="selectedDeviceName"></span></p>
-            <p><strong>Device Value:</strong> <span id="selectedDeviceValue"></span></p>
-          </div>
+        <div class="wizard-header">
+          <h1>🛡️ Choose Your Plan</h1>
+          <p>Select the coverage level that fits your needs</p>
+        </div>
+
+        <div class="selected-device-info">
+          <p><strong>Selected Device:</strong> <span id="selectedDeviceName"></span></p>
+          <p><strong>Device Value:</strong> <span id="selectedDeviceValue"></span></p>
         </div>
 
         <div id="plansComparison" class="plans-comparison"></div>
@@ -68,8 +854,8 @@
 
       <!-- Step 3: Review & Confirm -->
       <div id="step3" class="wizard-step">
-        <div class="step-header">
-          <h1>Step 3: Review Your Plan</h1>
+        <div class="wizard-header">
+          <h1>✓ Review Your Plan</h1>
           <p>Confirm your selection before purchasing</p>
         </div>
 
@@ -101,28 +887,31 @@
               <span class="value" id="reviewCoverage"></span>
             </div>
             <div class="review-row">
-              <span class="label">Plan Description:</span>
-              <span class="value" id="reviewDescription"></span>
+              <span class="label">Deductible:</span>
+              <span class="value" id="reviewDeductible"></span>
             </div>
           </div>
 
           <div class="review-section">
-            <h3>Coverage Details</h3>
+            <h3>Coverage Includes</h3>
             <ul id="coverageList" class="coverage-list"></ul>
           </div>
         </div>
 
         <div class="step-nav">
           <button class="btn btn-secondary" onclick="goBack()">← Back</button>
-          <button class="btn btn-primary" id="confirmBtn" onclick="confirmPlan()">Confirm & Purchase Plan</button>
+          <button class="btn btn-primary" id="confirmBtn" onclick="confirmPlan()">✓ Confirm & Activate Plan</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+</footer>
+
 <script>
-  // State management
   const state = {
     selectedLaptopId: null,
     selectedLaptop: null,
@@ -139,7 +928,7 @@
     const response = await fetch(url, {
       ...options,
       headers,
-      credentials: 'include', // Include session cookies
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -153,16 +942,15 @@
     return response.json();
   }
 
-  // Load Laptops
   async function loadLaptops() {
     try {
       const laptops = await apiCall('/api/laptop');
       
       if (laptops.length === 0) {
         document.getElementById('laptopsGrid').innerHTML = `
-          <div class="empty-state">
-            <p>No laptops found. Please add a laptop first.</p>
-            <a href="/add-laptop" class="btn btn-primary">Add Laptop</a>
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <p>📭 No laptops found. Please add a laptop first.</p>
+            <a href="/add-laptop" class="btn btn-primary">+ Add Your First Laptop</a>
           </div>
         `;
         return;
@@ -170,15 +958,13 @@
 
       const html = laptops.map(laptop => `
         <div class="laptop-card-selectable" onclick="selectLaptop('${laptop._id}', '${laptop.brand} ${laptop.model}', ${laptop.purchaseValue})">
-          <div class="laptop-card-content">
-            <h3>${laptop.brand} ${laptop.model}</h3>
-            <p><strong>Serial:</strong> ${laptop.serialNumber}</p>
-            <p><strong>Value:</strong> ZMW ${laptop.purchaseValue.toFixed(2)}</p>
-            <p><strong>Condition:</strong> <span class="badge badge-${laptop.condition}">${laptop.condition}</span></p>
-          </div>
+          <h3>💻 ${laptop.brand} ${laptop.model}</h3>
+          <p><strong>Serial:</strong> ${laptop.serialNumber}</p>
+          <p><strong>Value:</strong> ZMW ${laptop.purchaseValue.toFixed(2)}</p>
+          <p><strong>Condition:</strong> <span class="badge badge-${laptop.condition}">${laptop.condition}</span></p>
           <div class="select-indicator">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="11"></circle>
+              <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           </div>
         </div>
@@ -190,12 +976,10 @@
     }
   }
 
-  // Select Laptop
   async function selectLaptop(laptopId, deviceName, deviceValue) {
     state.selectedLaptopId = laptopId;
     state.selectedLaptop = { name: deviceName, value: deviceValue };
 
-    // Update UI
     document.querySelectorAll('.laptop-card-selectable').forEach(card => {
       card.classList.remove('selected');
     });
@@ -210,7 +994,6 @@
     }
   }
 
-  // Display Plans
   function displayPlans() {
     document.getElementById('selectedDeviceName').textContent = state.selectedLaptop.name;
     document.getElementById('selectedDeviceValue').textContent = 'ZMW ' + state.selectedLaptop.value.toFixed(2);
@@ -237,14 +1020,12 @@
           <span class="highlight">✓ ${plan.type === 'basic' ? 'Water Damage' : plan.type === 'premium' ? 'Theft & Damage' : 'Complete Coverage'}</span>
           <span class="highlight">✓ 24/7 Support</span>
         </div>
-        <button class="btn btn-outline" onclick="event.stopPropagation()">Select Plan</button>
       </div>
     `).join('');
 
     document.getElementById('plansComparison').innerHTML = plansHtml;
   }
 
-  // Select Plan
   function selectPlan(planType, element) {
     state.selectedPlanType = planType;
 
@@ -255,7 +1036,6 @@
     document.getElementById('continueBtn').disabled = false;
   }
 
-  // Continue to Review
   function continueToPlan() {
     if (!state.selectedPlanType) {
       alert('Please select a plan');
@@ -265,16 +1045,16 @@
     const plan = state.suggestedPlans.find(p => p.type === state.selectedPlanType);
     
     document.getElementById('reviewDevice').textContent = state.selectedLaptop.name;
-    document.getElementById('reviewValue').textContent = '$' + state.selectedLaptop.value.toFixed(2);
+    document.getElementById('reviewValue').textContent = 'ZMW ' + state.selectedLaptop.value.toFixed(2);
     document.getElementById('reviewPlanType').textContent = plan.name;
-    document.getElementById('reviewPremium').textContent = '$' + plan.monthly.toFixed(2) + '/month';
-    document.getElementById('reviewCoverage').textContent = '$' + plan.coverage.toFixed(2);
-    document.getElementById('reviewDescription').textContent = plan.description;
+    document.getElementById('reviewPremium').textContent = 'ZMW ' + plan.monthly.toFixed(2) + '/month';
+    document.getElementById('reviewCoverage').textContent = 'ZMW ' + plan.coverage.toFixed(2);
+    document.getElementById('reviewDeductible').textContent = 'ZMW ' + (plan.coverage * 0.1).toFixed(2);
 
     const coverageItems = {
-      basic: ['Water damage protection', 'Up to ZMW 5,000 coverage', 'Email support'],
-      premium: ['Theft & damage protection', 'Up to ZMW 15,000 coverage', '24/7 phone support', 'Water & liquid damage'],
-      pro: ['Complete coverage', '90% device value', 'Loss protection', 'Extended warranty', 'Priority support']
+      basic: ['Water damage protection', 'Up to ZMW 5,000 coverage', 'Email support', 'Standard processing'],
+      premium: ['Theft & damage protection', 'Up to ZMW 15,000 coverage', '24/7 phone support', 'Water & liquid damage', 'Fast processing'],
+      pro: ['Complete coverage', '90% device value protection', 'Loss protection included', 'Extended warranty', 'Priority support']
     };
 
     const items = coverageItems[state.selectedPlanType] || [];
@@ -285,7 +1065,6 @@
     goToStep(3);
   }
 
-  // Confirm Plan
   async function confirmPlan() {
     try {
       document.getElementById('confirmBtn').disabled = true;
@@ -299,16 +1078,15 @@
         })
       });
 
-      alert('Plan purchased successfully! Your coverage is now active.');
+      alert('✓ Plan activated successfully! Your device is now covered.');
       window.location.href = '/plans';
     } catch (error) {
       alert('Error creating plan: ' + error.message);
       document.getElementById('confirmBtn').disabled = false;
-      document.getElementById('confirmBtn').textContent = 'Confirm & Purchase Plan';
+      document.getElementById('confirmBtn').textContent = '✓ Confirm & Activate Plan';
     }
   }
 
-  // Navigation
   function goToStep(stepNum) {
     document.querySelectorAll('.wizard-step').forEach(step => {
       step.classList.remove('active');
@@ -330,14 +1108,6 @@
     loadLaptops();
   });
 </script>
-    </div>
-  </div>
-</div>
-
-<footer class="footer">
-  <p>&copy; 2026 SafeTech. All rights reserved.</p>
-</footer>
-
 <script src="/js/main.js"></script>
 </body>
 </html>
