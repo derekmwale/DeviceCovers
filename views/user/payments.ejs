@@ -20,6 +20,19 @@
   </div>
 </nav>
 <div class="page-content">
+  <div class="dashboard">
+    <div class="sidebar">
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item">📊 Overview</a>
+        <a href="/my-laptops" class="nav-item">💻 My Laptops</a>
+        <a href="/add-laptop" class="nav-item">➕ Add Laptop</a>
+        <a href="/plans" class="nav-item">🛡️ Insurance Plans</a>
+        <a href="/payments" class="nav-item active">💳 Payments</a>
+        <a href="/claims" class="nav-item">📋 Claims</a>
+      </nav>
+    </div>
+
+    <div class="dashboard-content">
   <div class="payments-page-container">
     <div class="page-header">
       <div class="header-content">
@@ -87,10 +100,6 @@
     </div>
   </div>
 </div>
-
-<footer class="footer">
-  <p>&copy; 2026 SafeTech. All rights reserved.</p>
-</footer>
 
 <script>
   async function apiCall(url, options = {}) {
@@ -300,6 +309,14 @@
     loadPayments();
   });
 </script>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+</footer>
+
 <script src="/js/main.js"></script>
 </body>
 </html>
