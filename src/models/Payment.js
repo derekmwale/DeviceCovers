@@ -22,11 +22,13 @@ const paymentSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['stripe', 'paypal', 'manual', 'pending'],
+      enum: ['stripe', 'paypal', 'manual', 'pending', 'lenco'],
       required: true,
     },
     stripeTransactionId: String,
     paypalTransactionId: String,
+    lencoTransactionId: String,
+    lencoReference: String,
     status: {
       type: String,
       enum: ['pending', 'completed', 'failed', 'refunded'],

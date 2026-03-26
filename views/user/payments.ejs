@@ -185,64 +185,343 @@
     }
   }
 
-  // Pay Now
-  async function payNow(paymentId) {
+  // Pay Now - Redirect to Mobile Money Payment Page
+  function payNow(paymentId) {
+    // Store the payment ID in sessionStorage for the mobile money page
+    sessionStorage.setItem('currentPaymentId', paymentId);
+    
+    // Create a hidden container to show the mobile money page
+    const mobileMoneyPage = document.createElement('div');
+    mobileMoneyPage.id = 'mobile-money-page';
+    mobileMoneyPage.style.display = 'none';
+    document.body.appendChild(mobileMoneyPage);
+    
+    // Load the mobile money payment page
+    loadMobileMoneyPaymentPage(paymentId);
+  }
+  
+  // Load Mobile Money Payment Page
+  async function loadMobileMoneyPaymentPage(paymentId) {
     try {
       const payment = await apiCall(`/api/payment/${paymentId}`);
       
-      // Create a simple payment modal
-      const modal = `
+      const pageHTML = `
+        <div id="mobile-money-overlay" class="mobile-money-overlay">
+          <div class="mobile-money-container">
+            <!-- Header -->
+            <div class="mm-header">
+              <button class="mm-back-btn" onclick="backToPayments()">← Back</button>
+              <h1>💳 Payment Method</h1>
+              <div></div>
+            </div>
+            
+            <!-- Payment Summary -->
+            <div class="mm-payment-summary">
+              <div class="mm-summary-card">
+                <h2>Payment Details</h2>
+                <div class="mm-detail-row">
+                  <span class="label">Amount:</span>
+                  <span class="value">ZMW ${payment.amount.toFixed(2)}</span>
+                </div>
+                <div class="mm-detail-row">
+                  <span class="label">Plan:</span>
+                  <span class="value">${payment.plan?.planType?.toUpperCase() || 'N/A'}</span>
+                </div>
+                <div class="mm-detail-row">
+                  <span class="label">Due Date:</span>
+                  <span class="value">${new Date(payment.dueDate).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Payment Methods -->
+            <div class="mm-payment-methods">
+              <h2>Select Payment Method</h2>
+              
+              <!-- Mobile Money (Primary) -->
+              <div class="mm-method-card mm-method-primary" onclick="showMobileMoneyPhoneForm('${paymentId}')">
+                <div class="mm-method-header">
+                  <div class="mm-method-icon">📱</div>
+                  <div class="mm-method-title">
+                    <h3>Mobile Money</h3>
+                    <p>MTN, Airtel, Vodafone</p>
+                  </div>
+                  <div class="mm-method-arrow">→</div>
+                </div>
+                <div class="mm-method-description">
+                  Quick, secure payment via mobile money
+                </div>
+              </div>
+              
+              <!-- Card Payment -->
+              <div class="mm-method-card" onclick="showCardPaymentForm('${paymentId}')">
+                <div class="mm-method-header">
+                  <div class="mm-method-icon">💳</div>
+                  <div class="mm-method-title">
+                    <h3>Card Payment</h3>
+                    <p>Debit or Credit Card</p>
+                  </div>
+                  <div class="mm-method-arrow">→</div>
+                </div>
+                <div class="mm-method-description">
+                  Pay using your credit or debit card
+                </div>
+              </div>
+              
+              <!-- Bank Transfer -->
+              <div class="mm-method-card" onclick="showBankTransferInfo('${paymentId}')">
+                <div class="mm-method-header">
+                  <div class="mm-method-icon">🏦</div>
+                  <div class="mm-method-title">
+                    <h3>Bank Transfer</h3>
+                    <p>Direct bank deposit</p>
+                  </div>
+                  <div class="mm-method-arrow">→</div>
+                </div>
+                <div class="mm-method-description">
+                  Transfer directly from your bank account
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="mm-footer">
+              <p>Your payment is secure and encrypted</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', pageHTML);
+    } catch (error) {
+      alert('Error loading payment page: ' + error.message);
+    }
+  }
+  
+  // Back to Payments
+  function backToPayments() {
+    const overlay = document.getElementById('mobile-money-overlay');
+    if (overlay) {
+      overlay.remove();
+    }
+    sessionStorage.removeItem('currentPaymentId');
+  }
+
+  // Show Mobile Money Phone Number Form
+  function showMobileMoneyPhoneForm(paymentId) {
+    // Get the payment methods section
+    const paymentMethodsSection = document.querySelector('.mm-payment-methods');
+    
+    if (paymentMethodsSection) {
+      // Replace content with phone form
+      paymentMethodsSection.innerHTML = `
+        <div class="mm-phone-form-container">
+          <button class="mm-back-to-methods-btn" onclick="loadMobileMoneyPaymentPage('${paymentId}')">← Back to Methods</button>
+          <h2>📱 Enter Mobile Money Details</h2>
+          <form id="phoneForm" onsubmit="submitPhoneNumber(event, '${paymentId}')">
+            <div class="form-group">
+              <label for="phoneNumber">Phone Number</label>
+              <div class="phone-input-group">
+                <span class="phone-prefix">+260</span>
+                <input 
+                  type="tel" 
+                  id="phoneNumber" 
+                  placeholder="97XXXXXXX" 
+                  maxlength="9" 
+                  pattern="[0-9]{9}"
+                  required 
+                  title="Enter a valid Zambian phone number (9 digits)"
+                  autofocus
+                />
+              </div>
+              <small>Format: Enter without +260 (e.g., 971234567)</small>
+            </div>
+            <div class="form-group">
+              <label for="provider">Mobile Provider</label>
+              <select id="provider" required>
+                <option value="">Select your provider</option>
+                <option value="mtn">📱 MTN</option>
+                <option value="airtel">📱 Airtel</option>
+                <option value="vodafone">📱 Vodafone</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Continue to Payment →</button>
+          </form>
+        </div>
+      `;
+    }
+  }
+
+  // Submit Phone Number and Initiate Payment
+  async function submitPhoneNumber(event, paymentId) {
+    event.preventDefault();
+    
+    const phoneNumber = document.getElementById('phoneNumber').value;
+    const provider = document.getElementById('provider').value;
+    
+    if (!phoneNumber || phoneNumber.length !== 9) {
+      alert('Please enter a valid 9-digit phone number');
+      return;
+    }
+
+    if (!provider) {
+      alert('Please select a mobile provider');
+      return;
+    }
+
+    // Format phone number with country code
+    const fullPhoneNumber = '+260' + phoneNumber;
+    
+    // Initiate Lenco payment with phone number (no need to close modal)
+    initiateLencoPayment(paymentId, fullPhoneNumber, provider);
+  }
+
+  // Initiate Lenco Mobile Money Payment
+  async function initiateLencoPayment(paymentId, phoneNumber = null, provider = null) {
+    try {
+      closeModal();
+      
+      // Show loading indicator
+      const loadingModal = `
+        <div class="modal-overlay">
+          <div class="modal-content modal-sm">
+            <div class="loading-spinner">
+              <div class="spinner"></div>
+              <p>Initializing mobile money payment...</p>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', loadingModal);
+
+      console.log('💳 Initiating Lenco payment for payment:', paymentId);
+
+      const response = await apiCall('/api/payment/lenco/initiate', {
+        method: 'POST',
+        body: JSON.stringify({ 
+          paymentId,
+          phoneNumber,
+          provider
+        })
+      });
+
+      // Close loading modal
+      document.querySelector('.modal-overlay').remove();
+
+      if (!response.data || !response.data.authorizationUrl) {
+        throw new Error('Failed to get payment authorization URL');
+      }
+
+      console.log('✅ Lenco payment initiated:', {
+        transactionId: response.data.transactionId,
+        reference: response.data.reference,
+        authorizationUrl: response.data.authorizationUrl,
+      });
+
+      // Show success modal with redirect button
+      const successModal = `
         <div class="modal-overlay" onclick="closeModal(event)">
           <div class="modal-content" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal()">&times;</button>
-            <h2>Process Payment</h2>
-            <div class="payment-details">
-              <p><strong>Amount:</strong> ZMW ${payment.amount.toFixed(2)}</p>
-              <p><strong>Plan:</strong> ${payment.plan?.planType?.toUpperCase()}</p>
-              <p><strong>Due Date:</strong> ${new Date(payment.dueDate).toLocaleDateString()}</p>
+            <div class="success-message">
+              <div class="success-icon">✓</div>
+              <h2>Payment Initiated</h2>
+              <p>You will be redirected to complete your mobile money payment</p>
+              <div class="payment-details">
+                <p><strong>Reference:</strong> ${response.data.reference}</p>
+                <p><strong>Transaction ID:</strong> ${response.data.transactionId}</p>
+              </div>
+              <button class="btn btn-primary" onclick="redirectToLenco('${response.data.authorizationUrl}', '${response.data.transactionId}')">
+                Continue to Payment Provider →
+              </button>
             </div>
-            <form id="paymentForm">
-              <div class="form-group">
-                <label for="cardNumber">Card Number</label>
-                <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required />
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="expiryDate">Expiry Date</label>
-                  <input type="text" id="expiryDate" placeholder="MM/YY" required />
-                </div>
-                <div class="form-group">
-                  <label for="cvv">CVV</label>
-                  <input type="text" id="cvv" placeholder="123" required />
-                </div>
-              </div>
-              <button type="submit" class="btn btn-primary">Pay ZMW ${payment.amount.toFixed(2)}</button>
-            </form>
           </div>
         </div>
       `;
 
-      document.body.insertAdjacentHTML('beforeend', modal);
-
-      document.getElementById('paymentForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        try {
-          const result = await apiCall(`/api/payment/${paymentId}/confirm`, {
-            method: 'POST',
-            body: JSON.stringify({ status: 'completed' })
-          });
-
-          alert('Payment successful! Thank you for your payment.');
-          closeModal();
-          loadPayments();
-        } catch (error) {
-          alert('Payment failed: ' + error.message);
-        }
-      });
+      document.body.insertAdjacentHTML('beforeend', successModal);
     } catch (error) {
-      alert('Error processing payment: ' + error.message);
+      console.error('❌ Lenco payment error:', error);
+      alert('❌ Failed to initiate mobile money payment: ' + error.message);
     }
+  }
+
+  // Redirect to Lenco authorization URL
+  function redirectToLenco(authorizationUrl, transactionId) {
+    console.log('🔀 Redirecting to Lenco:', authorizationUrl);
+    // Store transaction ID in sessionStorage for verification after return
+    sessionStorage.setItem('lencoTransactionId', transactionId);
+    window.location.href = authorizationUrl;
+  }
+
+  // Show Card Payment Form
+  function showCardPaymentForm(paymentId) {
+    closeModal();
+    
+    const payment = document.querySelector('[data-payment-id="' + paymentId + '"]');
+    const amount = parseFloat(payment?.dataset.amount || 0);
+
+    const cardModal = `
+      <div class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+          <button class="modal-close" onclick="closeModal()">&times;</button>
+          <h2>💳 Card Payment</h2>
+          <form id="cardPaymentForm" onsubmit="processCardPayment(event, '${paymentId}')">
+            <div class="form-group">
+              <label for="cardNumber">Card Number</label>
+              <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" required />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="expiryDate">Expiry Date</label>
+                <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5" required />
+              </div>
+              <div class="form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" placeholder="123" maxlength="4" required />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Pay ZMW ${amount.toFixed(2)}</button>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', cardModal);
+  }
+
+  // Show Bank Transfer Information
+  function showBankTransferInfo(paymentId) {
+    closeModal();
+
+    const bankModal = `
+      <div class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+          <button class="modal-close" onclick="closeModal()">&times;</button>
+          <h2>🏦 Bank Transfer Details</h2>
+          <div class="bank-info">
+            <p>Please transfer the payment amount to the following account:</p>
+            <div class="bank-details">
+              <p><strong>Bank Name:</strong> Standard Chartered Bank Zambia</p>
+              <p><strong>Account Name:</strong> SafeTech Insurance Ltd</p>
+              <p><strong>Account Number:</strong> 1234567890</p>
+              <p><strong>Swift Code:</strong> SCBLZAZA</p>
+              <p><strong>Reference:</strong> USE-YOUR-PAYMENT-ID</p>
+            </div>
+            <p class="note">⏳ Your payment will be marked as completed within 24 hours of receipt</p>
+            <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', bankModal);
+  }
+
+  // Process Card Payment (placeholder)
+  async function processCardPayment(event, paymentId) {
+    event.preventDefault();
+    alert('Card payment processing coming soon. Use mobile money for now.');
   }
 
   // View Receipt
@@ -304,9 +583,80 @@
     window.print();
   }
 
+  // Verify Lenco Payment After Return
+  async function verifyLencoPaymentReturn() {
+    try {
+      const transactionId = sessionStorage.getItem('lencoTransactionId');
+      if (!transactionId) return;
+
+      console.log('🔍 Verifying Lenco payment return:', transactionId);
+
+      // Give user a moment to return from payment gateway
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const response = await apiCall('/api/payment/lenco/verify', {
+        method: 'POST',
+        body: JSON.stringify({ lencoTransactionId: transactionId })
+      });
+
+      // Clear from sessionStorage
+      sessionStorage.removeItem('lencoTransactionId');
+
+      if (response.message === 'Payment verified successfully') {
+        console.log('✅ Lenco payment verified successfully');
+        
+        // Show success notification
+        const notification = `
+          <div class="notification notification-success">
+            <div class="notification-content">
+              <div class="notification-icon">✓</div>
+              <h3>Payment Successful!</h3>
+              <p>Your payment has been processed successfully. Thank you!</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="notification-close">&times;</button>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', notification);
+
+        // Reload payments after 2 seconds
+        setTimeout(() => {
+          loadPayments();
+        }, 2000);
+      } else if (response.status === 'pending') {
+        console.log('⏳ Payment still pending');
+        
+        const notification = `
+          <div class="notification notification-warning">
+            <div class="notification-content">
+              <div class="notification-icon">⏳</div>
+              <h3>Payment Pending</h3>
+              <p>Your payment is being processed. Please wait or check back later.</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="notification-close">&times;</button>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', notification);
+
+        setTimeout(() => {
+          loadPayments();
+        }, 2000);
+      } else {
+        console.warn('⚠️ Payment verification result:', response);
+      }
+    } catch (error) {
+      console.error('Error verifying Lenco payment:', error.message);
+    }
+  }
+
   // Load on page load
   window.addEventListener('load', () => {
     loadPayments();
+    
+    // Check for Lenco payment return
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('status') === 'success' || sessionStorage.getItem('lencoTransactionId')) {
+      verifyLencoPaymentReturn();
+    }
   });
 </script>
     </div>
