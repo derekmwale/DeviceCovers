@@ -7,22 +7,31 @@
 const axios = require('axios');
 
 // Lenco API configuration
-const LENCO_API_BASE_URL = 'https://api.lenco.io/v1';
+// Using the correct Lenco API v2 endpoint with proper authentication
+const LENCO_API_BASE_URL = 'https://sandbox.lenco.co/access/v2/'
+
 const LENCO_API_KEY = process.env.LENCO_API_KEY;
 const LENCO_BUSINESS_ID = process.env.LENCO_BUSINESS_ID;
 
 // Validate configuration
 if (!LENCO_API_KEY || !LENCO_BUSINESS_ID) {
   console.warn('⚠️ Lenco credentials not configured. Mobile money payments will not work.');
+} else {
+  console.log('✅ Lenco credentials loaded:', {
+    businessId: LENCO_BUSINESS_ID,
+    apiKeyLength: LENCO_API_KEY?.length,
+  });
 }
 
-// Lenco API client
+// Lenco API client with proper headers
 const lencoClient = axios.create({
   baseURL: LENCO_API_BASE_URL,
   headers: {
     'Authorization': `Bearer ${LENCO_API_KEY}`,
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
 });
 
 /**
@@ -39,6 +48,7 @@ exports.createCollectionRequest = async (paymentData) => {
       customerPhone,
       paymentId,
       description,
+      provider,
     } = paymentData;
 
     // Validate required fields
@@ -46,52 +56,78 @@ exports.createCollectionRequest = async (paymentData) => {
       throw new Error('Amount and customer phone are required');
     }
 
-    // Create collection request payload
+    // Normalize phone number - remove all non-numeric characters
+    const normalizedPhone = customerPhone.replace(/\D/g, '');
+    
+    // If phone doesn't start with 260 (Zambia code), add it
+    let formattedPhone = normalizedPhone;
+    if (!normalizedPhone.startsWith('260')) {
+      formattedPhone = '260' + normalizedPhone.slice(-9); // Take last 9 digits and add 260
+    }
+
+    // Create collection request payload - simplified for mobile money endpoint
     const payload = {
-      business_id: LENCO_BUSINESS_ID,
-      amount: Math.round(amount * 100), // Convert to smallest currency unit (cents)
+      operator: provider === 'airtel' ? 'airtel' : 'mtn',
+      bearer: 'customer',
+      phone: formattedPhone,
+      amount: String(Math.round(amount)),
       currency: currency.toUpperCase(),
-      customer: {
-        name: customerName || 'SafeTech Customer',
-        email: customerEmail,
-        phone: customerPhone.replace(/\D/g, ''), // Remove non-numeric characters
-      },
-      reference: `SAFE-${paymentId}`,
-      description: description || 'SafeTech Insurance Premium Payment',
-      redirect_url: `${process.env.APP_URL}/payments?status=success&reference=`,
-      webhook_url: `${process.env.APP_URL}/api/payment/webhook/lenco`,
-      metadata: {
-        payment_id: paymentId,
-        service: 'safetech_insurance',
-      },
+      reference: `SAFE-${paymentId}-${Date.now()}`,
     };
 
     console.log('📤 Creating Lenco collection request:', {
       amount: payload.amount,
       currency: payload.currency,
+      phone: formattedPhone,
       reference: payload.reference,
+      business_id: LENCO_BUSINESS_ID,
+      endpoint: 'POST /collections',
     });
 
-    const response = await lencoClient.post('/collections', payload);
+    const response = await lencoClient.post('/collections/mobile-money', payload);
+
+    console.log('📥 Lenco API Response:', {
+      fullResponse: JSON.stringify(response.data, null, 2),
+    });
+
+    const transactionId = response.data.data?.id || response.data.id;
+    const status = response.data.data?.status || response.data.status;
 
     console.log('✅ Lenco collection request created:', {
-      id: response.data.data.id,
-      status: response.data.data.status,
-      authorization_url: response.data.data.authorization_url,
+      id: transactionId,
+      status: status,
+      fullData: response.data.data || response.data,
     });
+
+    // For mobile money, the authorization URL might be returned directly or we need to construct it
+    const authUrl = response.data.data?.authorization_url || 
+                    response.data.authorization_url || 
+                    response.data.data?.authorizationUrl ||
+                    response.data.authorizationUrl ||
+                    response.data.link ||
+                    response.data.data?.link;
+
+    // If no authorization URL is returned, construct one from the transaction ID
+    const finalAuthUrl = authUrl || `${LENCO_API_BASE_URL}collections/${transactionId}/authorize`;
 
     return {
       success: true,
       data: {
-        transactionId: response.data.data.id,
-        reference: response.data.data.reference,
-        authorizationUrl: response.data.data.authorization_url,
-        status: response.data.data.status,
-        createdAt: response.data.data.created_at,
+        transactionId: transactionId,
+        reference: response.data.data?.reference || response.data.reference,
+        authorizationUrl: finalAuthUrl,
+        status: status,
+        createdAt: response.data.data?.created_at || response.data.created_at,
       },
     };
   } catch (error) {
-    console.error('❌ Lenco API Error:', error.response?.data || error.message);
+    console.error('❌ Lenco API Error:', {
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message,
+      data: error.response?.data,
+      url: error.config?.url,
+      method: error.config?.method,
+    });
     return {
       success: false,
       error: error.response?.data?.message || error.message,

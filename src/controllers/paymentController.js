@@ -160,6 +160,7 @@ exports.initiateLencoPayment = async (req, res) => {
       customerPhone: finalPhoneNumber,
       paymentId: payment._id.toString(),
       description: `Insurance Premium - ${payment.plan?.planType?.toUpperCase()} Plan`,
+      provider: provider,
     });
 
     if (!lencoResult.success) {
@@ -314,8 +315,8 @@ exports.handleLencoWebhook = async (req, res) => {
         return res.status(404).json({ message: 'Payment not found' });
       }
 
-      // Update payment status
-      payment.status = 'completed';
+      // Update payment status to paid
+      payment.status = 'paid';
       payment.paidDate = new Date();
       payment.receiptNumber = `REC-${Date.now()}`;
       await payment.save();
@@ -328,7 +329,7 @@ exports.handleLencoWebhook = async (req, res) => {
         await plan.save();
       }
 
-      console.log('✅ Webhook processed: Payment completed', transactionId);
+      console.log('✅ Webhook processed: Payment marked as paid', transactionId);
     } else if (payload.event === 'collection.failed') {
       const transactionId = payload.data.id;
       const payment = await Payment.findOne({
