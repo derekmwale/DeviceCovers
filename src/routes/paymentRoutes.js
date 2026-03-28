@@ -15,6 +15,7 @@ router.post('/confirm', paymentController.confirmPayment);
 router.post('/lenco/initiate', paymentController.initiateLencoPayment);
 router.post('/lenco/verify', paymentController.verifyLencoPayment);
 router.get('/lenco/methods', paymentController.getLencoPaymentMethods);
+router.get('/lenco/success', paymentController.handleLencoPaymentSuccess);
 
 // Lenco webhook (no auth required for webhook verification)
 router.post('/webhook/lenco', paymentController.handleLencoWebhook);

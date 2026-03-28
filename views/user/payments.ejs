@@ -136,7 +136,7 @@
 
       const html = payments.length > 0
         ? payments.map(payment => {
-          if (payment.status === 'completed') {
+          if (payment.status === 'completed' || payment.status === 'paid') {
             totalPaid += payment.amount || 0;
           } else if (payment.status === 'pending') {
             pendingCount++;
@@ -150,7 +150,7 @@
               <td>${payment.plan?.planType?.toUpperCase() || 'N/A'}</td>
               <td>
                 <span class="badge badge-${payment.status}">
-                  ${payment.status === 'pending' ? '⏳ Pending' : '✓ Completed'}
+                  ${payment.status === 'pending' ? '⏳ Pending' : payment.status === 'paid' ? '✓ Paid' : '✓ Completed'}
                 </span>
               </td>
               <td>
@@ -348,20 +348,20 @@
   // Initiate Lenco Mobile Money Payment
   async function initiateLencoPayment(paymentId, phoneNumber = null, provider = null) {
     try {
-      closeModal();
+      // Get the payment methods section
+      const paymentMethodsSection = document.querySelector('.mm-payment-methods');
       
-      // Show loading indicator
-      const loadingModal = `
-        <div class="modal-overlay">
-          <div class="modal-content modal-sm">
+      // Show loading indicator in the section
+      if (paymentMethodsSection) {
+        paymentMethodsSection.innerHTML = `
+          <div class="mm-loading-container">
             <div class="loading-spinner">
               <div class="spinner"></div>
-              <p>Initializing mobile money payment...</p>
             </div>
+            <p>Initializing mobile money payment...</p>
           </div>
-        </div>
-      `;
-      document.body.insertAdjacentHTML('beforeend', loadingModal);
+        `;
+      }
 
       console.log('💳 Initiating Lenco payment for payment:', paymentId);
 
@@ -374,9 +374,6 @@
         })
       });
 
-      // Close loading modal
-      document.querySelector('.modal-overlay').remove();
-
       if (!response.data || !response.data.authorizationUrl) {
         throw new Error('Failed to get payment authorization URL');
       }
@@ -387,31 +384,45 @@
         authorizationUrl: response.data.authorizationUrl,
       });
 
-      // Show success modal with redirect button
-      const successModal = `
-        <div class="modal-overlay" onclick="closeModal(event)">
-          <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeModal()">&times;</button>
-            <div class="success-message">
-              <div class="success-icon">✓</div>
-              <h2>Payment Initiated</h2>
-              <p>You will be redirected to complete your mobile money payment</p>
-              <div class="payment-details">
-                <p><strong>Reference:</strong> ${response.data.reference}</p>
-                <p><strong>Transaction ID:</strong> ${response.data.transactionId}</p>
-              </div>
-              <button class="btn btn-primary" onclick="redirectToLenco('${response.data.authorizationUrl}', '${response.data.transactionId}')">
-                Continue to Payment Provider →
-              </button>
+      // Show success message in the payment methods section (not as modal)
+      if (paymentMethodsSection) {
+        paymentMethodsSection.innerHTML = `
+          <div class="mm-success-container">
+            <div class="success-icon-large">✓</div>
+            <h2>Payment Initiated</h2>
+            <p>You will be redirected to complete your mobile money payment</p>
+            <div class="payment-details-inline">
+              <p><strong>Reference:</strong> ${response.data.reference}</p>
+              <p><strong>Transaction ID:</strong> ${response.data.transactionId}</p>
             </div>
+            
+            <p style="margin-top: 15px; font-size: 0.9em; color: #666; text-align: center;">
+              After completing payment, you'll be redirected back. Click below to reload payments if needed.
+            </p>
+            <button class="btn btn-secondary btn-block" onclick="location.reload()">
+              Reload Payments Page
+            </button>
+            <button class="btn btn-outline btn-block" onclick="loadMobileMoneyPaymentPage('${paymentId}')">
+              ← Back to Payment Methods
+            </button>
           </div>
-        </div>
-      `;
-
-      document.body.insertAdjacentHTML('beforeend', successModal);
+        `;
+      }
     } catch (error) {
       console.error('❌ Lenco payment error:', error);
-      alert('❌ Failed to initiate mobile money payment: ' + error.message);
+      
+      // Show error message in the section
+      const paymentMethodsSection = document.querySelector('.mm-payment-methods');
+      if (paymentMethodsSection) {
+        paymentMethodsSection.innerHTML = `
+          <div class="mm-error-container">
+            <p>❌ Failed to initiate mobile money payment: ${error.message}</p>
+            <button class="btn btn-secondary" onclick="loadMobileMoneyPaymentPage('${paymentId}')">
+              ← Back to Payment Methods
+            </button>
+          </div>
+        `;
+      }
     }
   }
 

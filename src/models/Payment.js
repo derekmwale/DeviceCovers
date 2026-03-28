@@ -31,7 +31,7 @@ const paymentSchema = new mongoose.Schema(
     lencoReference: String,
     status: {
       type: String,
-      enum: ['pending', 'completed', 'failed', 'refunded'],
+      enum: ['pending', 'paid', 'completed', 'failed', 'refunded'],
       default: 'pending',
     },
     billingCycle: {

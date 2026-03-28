@@ -375,3 +375,23 @@ exports.getLencoPaymentMethods = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+// Handle Lenco Payment Success Redirect
+exports.handleLencoPaymentSuccess = async (req, res) => {
+  try {
+    // This is called when user is redirected back from Lenco after successful payment
+    // Update payment status to paid
+    const { status } = req.query;
+
+    if (status === 'success') {
+      console.log('✅ Payment redirect received with success status');
+    }
+
+    // Redirect to payments page - the webhook will update the status
+    // We just need to show the payments page
+    res.redirect('/user/payments?paymentStatus=success');
+  } catch (error) {
+    console.error('❌ Error handling payment success:', error.message);
+    res.redirect('/user/payments?paymentStatus=error');
+  }
+};

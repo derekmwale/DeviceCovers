@@ -73,6 +73,7 @@ exports.createCollectionRequest = async (paymentData) => {
       amount: String(Math.round(amount)),
       currency: currency.toUpperCase(),
       reference: `SAFE-${paymentId}-${Date.now()}`,
+      redirect_url: `${process.env.APP_URL}/api/payment/lenco/success?status=success`,
     };
 
     console.log('📤 Creating Lenco collection request:', {
