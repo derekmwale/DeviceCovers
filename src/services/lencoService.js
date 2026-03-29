@@ -8,7 +8,7 @@ const axios = require('axios');
 
 // Lenco API configuration
 // Using the correct Lenco API v2 endpoint with proper authentication
-const LENCO_API_BASE_URL = 'https://sandbox.lenco.co/access/v2/'
+const LENCO_API_BASE_URL = 'https://api.lenco.co/access/v2/'
 
 const LENCO_API_KEY = process.env.LENCO_API_KEY;
 const LENCO_BUSINESS_ID = process.env.LENCO_BUSINESS_ID;
