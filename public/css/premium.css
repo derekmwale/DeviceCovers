@@ -710,8 +710,9 @@ textarea {
   font-size: var(--text-base);
   font-weight: 500;
   transition: all var(--transition-base);
-  background: #ffffff;
-  color: var(--text-primary);
+  background: #ffffff !important;
+  color: #000000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 input::placeholder,
@@ -726,7 +727,7 @@ textarea:focus {
   outline: none;
   border-color: var(--secondary);
   box-shadow: 0 0 0 3px var(--secondary-light);
-  background: var(--bg-primary);
+  background: #ffffff;
 }
 
 /* ============ PREMIUM TABLES ============ */
