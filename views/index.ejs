@@ -3,40 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SafeTech - Laptop Insurance</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta name="description" content="SafeTech - Enterprise-Grade Premium Laptop Insurance for Emerging Markets">
+  <title>SafeTech - Premium Laptop Insurance</title>
+  <link rel="stylesheet" href="/css/premium.css">
 </head>
 <body>
-<nav class="navbar">
-  <div class="navbar-container">
-    <a href="/" class="logo">
-      <div class="logo-icon">🛡️</div>
-      <span>SafeTech</span>
-    </a>
-    <ul class="nav-menu">
-      <li><a href="/">Home</a></li>
-      <% if (user) { %>
-      <li><a href="/dashboard">Dashboard</a></li>
-      <li><a href="/api/auth/logout">Logout</a></li>
-      <% } else { %>
-      <li><a href="/login">Login</a></li>
-      <li><a href="/register" class="btn-primary">Register</a></li>
-      <% } %>
-    </ul>
-  </div>
-</nav>
 <div class="page-content">
 <div class="hero">
   <div class="hero-container">
     <div class="hero-content">
       <h1>Enterprise-Grade <span class="highlight">Device Protection</span> for Emerging Markets</h1>
-      <p>SafeTech provides innovative, affordable laptop insurance solutions designed for emerging markets like Zambia. Protect your investment with flexible monthly plans, instant claims processing, and 24/7 support.</p>
+      <p>SafeTech provides innovative, affordable laptop insurance solutions designed for emerging markets. Protect your investment with flexible monthly plans, instant claims processing, and 24/7 premium support.</p>
       <div class="cta-buttons">
         <% if (user) { %>
-        <a href="/dashboard" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        <a href="/dashboard" class="btn btn-primary btn-lg">📊 Go to Dashboard</a>
         <% } else { %>
-        <a href="/register" class="btn btn-primary btn-lg">Get Protected Now</a>
-        <a href="/login" class="btn btn-secondary btn-lg">Sign In</a>
+        <a href="/register" class="btn btn-primary btn-lg">🚀 Get Protected Now</a>
+        <a href="/login" class="btn btn-secondary btn-lg">🔐 Sign In</a>
         <% } %>
       </div>
     </div>
@@ -44,62 +27,74 @@
   </div>
 </div>
 
-<section class="features">
+<section class="features" id="features">
   <h2>Why Choose SafeTech?</h2>
   <div class="feature-grid">
     <div class="feature">
       <h3>📱 Easy Registration</h3>
-      <p>Sign up in minutes and add your laptops instantly</p>
+      <p>Sign up in minutes with our streamlined process. Add your laptops instantly and choose your coverage level.</p>
     </div>
     <div class="feature">
       <h3>💰 Affordable Plans</h3>
-      <p>Monthly subscriptions starting from just ZMW 50</p>
+      <p>Premium monthly subscriptions starting from just ZMW 50. No hidden fees, transparent pricing.</p>
     </div>
     <div class="feature">
       <h3>🛡️ Full Coverage</h3>
-      <p>Damage, theft, and loss protection available</p>
+      <p>Comprehensive damage, theft, and loss protection available. Choose the plan that fits your needs.</p>
     </div>
     <div class="feature">
       <h3>⚡ Quick Claims</h3>
-      <p>Submit and track your claims in real-time</p>
+      <p>Submit and track your claims in real-time. Fast approval process with 24/7 support.</p>
+    </div>
+    <div class="feature">
+      <h3>🌍 Global Support</h3>
+      <p>Premium customer service available round the clock. Multiple support channels for your convenience.</p>
+    </div>
+    <div class="feature">
+      <h3>✨ Peace of Mind</h3>
+      <p>Rest assured your investment is protected. Industry-leading coverage and reliability.</p>
     </div>
   </div>
 </section>
 
 <section class="plans">
-  <h2>Insurance Plans</h2>
+  <h2>Premium Insurance Plans</h2>
   <div class="plans-grid">
     <div class="plan">
-      <h3>Basic</h3>
-      <p class="price">From ZMW 50/mo</p>
+      <h3>Essentials</h3>
+      <p class="price">ZMW 50<span style="font-size: var(--text-sm); font-weight: var(--font-normal);">/month</span></p>
       <ul>
         <li>Water damage protection</li>
         <li>Up to ZMW 5,000 coverage</li>
         <li>Email support</li>
+        <li>Monthly payment</li>
+        <li>Easy claim submission</li>
       </ul>
-      <button class="btn btn-outline">Learn More</button>
+      <a href="/register" class="btn btn-outline">Get Started</a>
     </div>
     <div class="plan featured">
-      <h3>Premium</h3>
-      <p class="price">From ZMW 100/mo</p>
+      <h3>💎 Premium</h3>
+      <p class="price">ZMW 100<span style="font-size: var(--text-sm); font-weight: var(--font-normal);">/month</span></p>
       <ul>
         <li>Theft & damage protection</li>
         <li>Up to ZMW 15,000 coverage</li>
-        <li>24/7 support</li>
+        <li>24/7 priority support</li>
         <li>Water & liquid damage</li>
+        <li>Fast claim processing</li>
       </ul>
-      <button class="btn btn-primary">Get Premium</button>
+      <a href="/register" class="btn btn-primary">Get Premium</a>
     </div>
     <div class="plan">
-      <h3>Pro</h3>
-      <p class="price">From ZMW 150/mo</p>
+      <h3>Enterprise</h3>
+      <p class="price">ZMW 150<span style="font-size: var(--text-sm); font-weight: var(--font-normal);">/month</span></p>
       <ul>
         <li>Complete coverage</li>
         <li>90% device value</li>
         <li>Loss protection</li>
         <li>Extended warranty</li>
+        <li>Dedicated support</li>
       </ul>
-      <button class="btn btn-outline">Learn More</button>
+      <a href="/register" class="btn btn-outline">Learn More</a>
     </div>
   </div>
 </section>
@@ -129,17 +124,76 @@
     </div>
     <div class="step">
       <span class="step-num">5</span>
-      <h4>Claim</h4>
-      <p>Submit claims when needed</p>
+      <h4>Get Protected</h4>
+      <p>Coverage starts immediately</p>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <h2>Trusted by Thousands</h2>
+  <div class="testimonial-grid">
+    <div class="testimonial">
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+      <p>"SafeTech has given me peace of mind. Excellent service and fast claims processing!"</p>
+      <p class="author">- John K.</p>
+    </div>
+    <div class="testimonial">
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+      <p>"Best insurance value for money. Highly recommend to anyone with expensive laptops."</p>
+      <p class="author">- Sarah M.</p>
+    </div>
+    <div class="testimonial">
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+      <p>"Customer support is phenomenal. They helped me process my claim within days."</p>
+      <p class="author">- David T.</p>
     </div>
   </div>
 </section>
 </div>
 
 <footer class="footer">
-  <p>&copy; 2026 SafeTech. All rights reserved. Laptop Insurance Made Simple.</p>
+  <div class="footer-container">
+    <div class="footer-section">
+      <h4>About SafeTech</h4>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="/">Plans</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Contact Us</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Claim Status</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Security</a></li>
+        <li><a href="#">Compliance</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="#">Twitter</a></li>
+        <li><a href="#">LinkedIn</a></li>
+        <li><a href="#">Facebook</a></li>
+        <li><a href="#">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 SafeTech. All rights reserved. Enterprise-Grade Premium Laptop Insurance Made Simple.</p>
+  </div>
 </footer>
-
-<script src="/js/main.js"></script>
 </body>
 </html>

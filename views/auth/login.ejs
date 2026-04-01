@@ -3,118 +3,423 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - SafeTech</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta name="description" content="SafeTech Premium Login - Secure Access to Your Insurance Dashboard">
+  <title>Premium Login - SafeTech</title>
+  <link rel="stylesheet" href="/css/premium.css">
+  <style>
+    .auth-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      height: 100vh;
+      background: var(--bg-primary);
+    }
+
+    .auth-branding {
+      background: var(--gradient-primary);
+      color: white;
+      padding: var(--space-12);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-branding::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .brand-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .brand-icon {
+      font-size: 5rem;
+      margin-bottom: var(--space-4);
+      filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    }
+
+    .brand-content h1 {
+      font-size: 3rem;
+      font-weight: var(--font-extrabold);
+      margin-bottom: var(--space-2);
+    }
+
+    .brand-tagline {
+      font-size: var(--text-xl);
+      opacity: 0.9;
+      margin-bottom: var(--space-12);
+      font-weight: var(--font-light);
+    }
+
+    .brand-features {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      margin-bottom: var(--space-12);
+    }
+
+    .brand-feature {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--text-lg);
+    }
+
+    .feature-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--rounded-full);
+      font-weight: bold;
+    }
+
+    .brand-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-8);
+      margin-top: var(--space-12);
+      padding-top: var(--space-12);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: var(--text-2xl);
+      margin-bottom: var(--space-1);
+    }
+
+    .stat small {
+      opacity: 0.8;
+      font-size: var(--text-sm);
+    }
+
+    .auth-form-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: var(--space-12);
+    }
+
+    .auth-form-wrapper {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-form-title {
+      font-size: var(--text-3xl);
+      font-weight: var(--font-extrabold);
+      color: var(--primary);
+      margin-bottom: var(--space-2);
+    }
+
+    .auth-form-subtitle {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-8);
+      font-size: var(--text-sm);
+    }
+
+    .form-group {
+      margin-bottom: var(--space-6);
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: var(--font-semibold);
+      margin-bottom: var(--space-2);
+      color: var(--text-primary);
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      border: 2px solid var(--border);
+      border-radius: var(--rounded-md);
+      font-size: inherit;
+      transition: all var(--transition-base);
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px var(--secondary-light);
+    }
+
+    .auth-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-6);
+      font-size: var(--text-sm);
+    }
+
+    .auth-links a {
+      color: var(--secondary);
+      text-decoration: none;
+      transition: color var(--transition-base);
+    }
+
+    .auth-links a:hover {
+      color: var(--secondary-dark);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      border-radius: var(--rounded-md);
+      font-weight: var(--font-bold);
+      font-size: var(--text-base);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl), var(--shadow-glow);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin: var(--space-6) 0;
+      color: var(--text-tertiary);
+      font-size: var(--text-sm);
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .social-login {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+
+    .social-btn {
+      padding: var(--space-3);
+      border: 2px solid var(--border);
+      background: var(--bg-primary);
+      border-radius: var(--rounded-md);
+      cursor: pointer;
+      font-size: var(--text-lg);
+      transition: all var(--transition-base);
+    }
+
+    .social-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .signup-link {
+      text-align: center;
+      padding-top: var(--space-6);
+      border-top: 1px solid var(--border);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .signup-link a {
+      color: var(--primary);
+      font-weight: var(--font-bold);
+      text-decoration: none;
+      transition: color var(--transition-base);
+    }
+
+    .signup-link a:hover {
+      color: var(--secondary);
+    }
+
+    @media (max-width: 768px) {
+      .auth-container {
+        grid-template-columns: 1fr;
+      }
+
+      .auth-branding {
+        padding: var(--space-8);
+        min-height: 200px;
+      }
+
+      .brand-icon {
+        font-size: 3rem;
+      }
+
+      .brand-content h1 {
+        font-size: 2rem;
+      }
+
+      .brand-stats {
+        margin-top: var(--space-8);
+        padding-top: var(--space-8);
+      }
+
+      .auth-form-container {
+        padding: var(--space-6);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .auth-branding {
+        display: none;
+      }
+
+      .auth-container {
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .auth-form-container {
+        padding: var(--space-4);
+      }
+
+      .auth-form-wrapper {
+        max-width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
 <nav class="navbar">
   <div class="navbar-container">
     <a href="/" class="logo">
-      <div class="logo-icon">🛡️</div>
+      <span class="logo-icon">🛡️</span>
       <span>SafeTech</span>
     </a>
     <ul class="nav-menu">
       <li><a href="/">Home</a></li>
-      <li><a href="/register" class="btn-primary">Register</a></li>
+      <li><a href="/register" class="btn btn-primary">Register</a></li>
     </ul>
   </div>
 </nav>
 
 <div class="page-content">
-  <div class="auth-page">
-    <div class="auth-container">
-      <!-- Left Side - Branding -->
-      <div class="auth-branding">
-        <div class="brand-content">
-          <div class="brand-icon">🛡️</div>
-          <h1>SafeTech</h1>
-          <p class="brand-tagline">Enterprise-Grade Device Protection</p>
-          
-          <div class="brand-features">
-            <div class="brand-feature">
-              <span class="feature-icon">✓</span>
-              <span>Fast & Secure Login</span>
-            </div>
-            <div class="brand-feature">
-              <span class="feature-icon">✓</span>
-              <span>Protect Your Devices</span>
-            </div>
-            <div class="brand-feature">
-              <span class="feature-icon">✓</span>
-              <span>24/7 Support</span>
-            </div>
+  <div class="auth-container">
+    <!-- Left Side - Branding -->
+    <div class="auth-branding">
+      <div class="brand-content">
+        <div class="brand-icon">🛡️</div>
+        <h1>SafeTech</h1>
+        <p class="brand-tagline">Enterprise-Grade Premium Device Protection</p>
+        
+        <div class="brand-features">
+          <div class="brand-feature">
+            <span class="feature-icon">✓</span>
+            <span>Fast & Secure Authentication</span>
           </div>
+          <div class="brand-feature">
+            <span class="feature-icon">✓</span>
+            <span>Premium Device Coverage</span>
+          </div>
+          <div class="brand-feature">
+            <span class="feature-icon">✓</span>
+            <span>24/7 Billion-Dollar Support</span>
+          </div>
+        </div>
 
-          <div class="brand-stats">
-            <div class="stat">
-              <strong>10K+</strong>
-              <small>Active Users</small>
-            </div>
-            <div class="stat">
-              <strong>ZMW 20B+</strong>
-              <small>Claims Processed</small>
-            </div>
+        <div class="brand-stats">
+          <div class="stat">
+            <strong>50K+</strong>
+            <small>Active Users</small>
+          </div>
+          <div class="stat">
+            <strong>ZMW 100B+</strong>
+            <small>Protected Value</small>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Right Side - Form -->
-      <div class="auth-form-container">
-        <div class="auth-form-wrapper">
-          <div class="form-header">
-            <h2>Welcome Back</h2>
-            <p>Sign in to manage your insurance policies</p>
+    <!-- Right Side - Form -->
+    <div class="auth-form-container">
+      <div class="auth-form-wrapper">
+        <div>
+          <h2 class="auth-form-title">Welcome Back</h2>
+          <p class="auth-form-subtitle">Sign in to your premium insurance dashboard</p>
+        </div>
+
+        <form id="loginForm" class="modern-form">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              placeholder="you@example.com"
+              required 
+            />
           </div>
 
-          <form id="loginForm" class="modern-form">
-            <div class="form-group">
-              <label for="email">Email Address</label>
-              <input 
-                type="email" 
-                id="email" 
-                name="email" 
-                placeholder="you@example.com"
-                required 
-              />
-              <div class="form-icon">✉️</div>
-            </div>
-
-            <div class="form-group">
-              <label for="password">Password</label>
-              <input 
-                type="password" 
-                id="password" 
-                name="password" 
-                placeholder="Enter your password"
-                required 
-              />
-              <div class="form-icon">🔐</div>
-            </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              placeholder="••••••••"
+              required 
+            />
+          </div>
 
             <div class="form-options">
-              <label class="checkbox-group">
-                <input type="checkbox" name="remember" />
-                <span>Remember me</span>
-              </label>
-              <a href="#" class="forgot-link">Forgot password?</a>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-lg auth-btn">
-              Sign In
-            </button>
-          </form>
-
-          <div class="auth-divider">
-            <span>Don't have an account?</span>
+            <label class="checkbox-group">
+              <input type="checkbox" name="remember" />
+              <span>Remember me</span>
+            </label>
+            <a href="#">Forgot password?</a>
           </div>
 
-          <a href="/register" class="btn btn-secondary btn-lg auth-btn">
-            Create New Account
-          </a>
+          <button type="submit" class="btn-login">
+            🔓 Sign In Securely
+          </button>
+        </form>
 
-          <p class="auth-footer">
-            By signing in, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-          </p>
+        <div class="divider">
+          Don't have an account?
+        </div>
+
+        <a href="/register" class="btn btn-secondary" style="width: 100%; justify-content: center;">
+          Create Premium Account
+        </a>
+
+        <p class="signup-link" style="margin-top: var(--space-6);">
+          By signing in, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+        </p>
         </div>
       </div>
     </div>
@@ -122,7 +427,47 @@
 </div>
 
 <footer class="footer">
-  <p>&copy; 2026 SafeTech. All rights reserved. Laptop Insurance Made Simple.</p>
+  <div class="footer-container">
+    <div class="footer-section">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/#features">Features</a></li>
+        <li><a href="/">Plans</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Contact Us</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Status</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Security</a></li>
+        <li><a href="#">Compliance</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="#">Twitter</a></li>
+        <li><a href="#">LinkedIn</a></li>
+        <li><a href="#">Facebook</a></li>
+        <li><a href="#">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 SafeTech. Premium Device Insurance. All rights reserved.</p>
+  </div>
 </footer>
 
 <script>
@@ -134,7 +479,7 @@
     try {
       const button = e.target.querySelector('button[type="submit"]');
       button.disabled = true;
-      button.textContent = 'Signing in...';
+      button.textContent = '⏳ Signing in...';
 
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -149,13 +494,13 @@
       } else {
         alert(result.message || 'Login failed');
         button.disabled = false;
-        button.textContent = 'Sign In';
+        button.textContent = '🔓 Sign In Securely';
       }
     } catch (error) {
       alert('Login failed: ' + error.message);
       const button = e.target.querySelector('button[type="submit"]');
       button.disabled = false;
-      button.textContent = 'Sign In';
+      button.textContent = '🔓 Sign In Securely';
     }
   });
 </script>

@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><%= title %></title>
-  <link rel="stylesheet" href="/css/style.css" />
+  <meta name="description" content="SafeTech - Enterprise-Grade Premium Laptop Insurance for Emerging Markets" />
+  <title><%= title || 'SafeTech - Premium Laptop Insurance' %></title>
+  <link rel="stylesheet" href="/css/premium.css" />
 </head>
 <body>
   <nav class="navbar">
     <div class="navbar-container">
-      <div class="logo">SafeTech</div>
+      <a href="/" class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span>SafeTech</span>
+      </a>
       <ul class="nav-menu">
         <li><a href="/">Home</a></li>
         <% if (user) { %>
@@ -17,7 +21,7 @@
         <li><a href="/api/auth/logout">Logout</a></li>
         <% } else { %>
         <li><a href="/login">Login</a></li>
-        <li><a href="/register" class="btn-primary">Register</a></li>
+        <li><a href="/register" class="btn btn-primary">Register</a></li>
         <% } %>
       </ul>
     </div>
@@ -26,7 +30,47 @@
   <div class="page-content"><%- body %></div>
 
   <footer class="footer">
-    <p>&copy; 2026 SafeTech. All rights reserved. Laptop Insurance Made Simple.</p>
+    <div class="footer-container">
+      <div class="footer-section">
+        <h4>About SafeTech</h4>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/plans">Plans</a></li>
+          <li><a href="/#features">Features</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Status</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Security</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">Twitter</a></li>
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">Facebook</a></li>
+          <li><a href="#">Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 SafeTech. All rights reserved. Enterprise-Grade Laptop Insurance Made Simple.</p>
+    </div>
   </footer>
 
   <script src="/js/main.js"></script>
