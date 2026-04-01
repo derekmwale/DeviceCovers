@@ -3,19 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Claims - SafeTech</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta name="description" content="SafeTech Claims - Manage Your Insurance Claims">
+  <title>Premium Claims - SafeTech</title>
+  <link rel="stylesheet" href="/css/premium.css">
 </head>
 <body>
 <nav class="navbar">
   <div class="navbar-container">
     <a href="/" class="logo">
-      <div class="logo-icon">🛡️</div>
+      <span class="logo-icon">🛡️</span>
       <span>SafeTech</span>
     </a>
     <ul class="nav-menu">
       <li><a href="/dashboard">Dashboard</a></li>
-      <li><a href="/api/auth/logout">Logout</a></li>
+      <li><a href="/my-laptops">Devices</a></li>
+      <li><a href="/payments">Payments</a></li>
+      <li><a href="/claims" class="active">Claims</a></li>
+      <li><a href="/api/auth/logout" class="btn btn-primary" style="margin-left: var(--space-4);">Logout</a></li>
     </ul>
   </div>
 </nav>
@@ -283,7 +287,47 @@
 </div>
 
 <footer class="footer">
-  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+  <div class="footer-container">
+    <div class="footer-section">
+      <h4>Dashboard</h4>
+      <ul>
+        <li><a href="/my-laptops">My Devices</a></li>
+        <li><a href="/payments">Payments</a></li>
+        <li><a href="/claims">Claims</a></li>
+        <li><a href="/plans">Plans</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Contact Support</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Documentation</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Security</a></li>
+        <li><a href="#">Compliance</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Account</h4>
+      <ul>
+        <li><a href="#">Profile Settings</a></li>
+        <li><a href="#">Security</a></li>
+        <li><a href="#">Preferences</a></li>
+        <li><a href="/api/auth/logout">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 SafeTech. Premium Device Insurance. All rights reserved.</p>
+  </div>
 </footer>
 
 

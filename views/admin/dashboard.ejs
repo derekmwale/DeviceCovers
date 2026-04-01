@@ -3,16 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - SafeTech</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta name="description" content="SafeTech Admin Panel - Manage Insurance Operations">
+  <title>Premium Admin Panel - SafeTech</title>
+  <link rel="stylesheet" href="/css/premium.css">
 </head>
 <body>
 <nav class="navbar">
   <div class="navbar-container">
-    <div class="logo"><a href="/">SafeTech</a></div>
+    <a href="/" class="logo">
+      <span class="logo-icon">🛡️</span>
+      <span>SafeTech</span>
+    </a>
     <ul class="nav-menu">
       <li><a href="/admin">Admin Panel</a></li>
-      <li><a href="/api/auth/logout">Logout</a></li>
+      <li><a href="/api/auth/logout" class="btn btn-primary">Logout</a></li>
     </ul>
   </div>
 </nav>
@@ -85,7 +89,47 @@
 </div>
 
 <footer class="footer">
-  <p>&copy; 2026 SafeTech. All rights reserved.</p>
+  <div class="footer-container">
+    <div class="footer-section">
+      <h4>Admin</h4>
+      <ul>
+        <li><a href="/admin">Dashboard</a></li>
+        <li><a href="#">Users</a></li>
+        <li><a href="#">Reports</a></li>
+        <li><a href="#">Settings</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Documentation</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Issues</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Security</a></li>
+        <li><a href="#">Compliance</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Account</h4>
+      <ul>
+        <li><a href="#">Profile</a></li>
+        <li><a href="#">Settings</a></li>
+        <li><a href="#">Security</a></li>
+        <li><a href="/api/auth/logout">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 SafeTech Admin Panel. Premium Device Insurance Management. All rights reserved.</p>
+  </div>
 </footer>
 
 <script src="/js/admin.js"></script>
