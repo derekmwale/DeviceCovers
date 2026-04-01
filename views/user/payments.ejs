@@ -395,7 +395,9 @@
               <p><strong>Reference:</strong> ${response.data.reference}</p>
               <p><strong>Transaction ID:</strong> ${response.data.transactionId}</p>
             </div>
-            
+            <button class="btn btn-primary btn-block" onclick="redirectToLenco('${response.data.authorizationUrl}', '${response.data.transactionId}')">
+              Continue to Payment Provider →
+            </button>
             <p style="margin-top: 15px; font-size: 0.9em; color: #666; text-align: center;">
               After completing payment, you'll be redirected back. Click below to reload payments if needed.
             </p>

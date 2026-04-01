@@ -1,0 +1,138 @@
+================================================================================
+MONTHLY PAYMENT SYSTEM - QUICK REFERENCE
+================================================================================
+
+KEY FEATURES IMPLEMENTED:
+✅ Monthly payments tied to selected plan's monthlyPremium
+✅ Automatic billing cycle tracking (month/year)
+✅ Payment due alerts on dashboard and payments page
+✅ Monthly status tracking (paid/pending/completed)
+✅ Automatic payment creation for new months
+✅ Prevents duplicate payments for same month
+
+================================================================================
+API ENDPOINTS
+================================================================================
+
+GET  /api/payment
+     - Returns all user payments with grouping by month/year
+     Response: { payments: [], paymentsByMonth: {}, totalCount: number }
+
+GET  /api/payment/check-due
+     - Checks if payment is due for current month
+     - Auto-creates payment if needed
+     Response: { paymentDue: bool, message: string, dueAmount: number }
+
+GET  /api/payment/month-status?month=3&year=2026
+     - Gets detailed status for specific month
+     Response: { month, year, payments[], allPaid: bool, totalDue, totalPaid }
+
+POST /api/payment/monthly
+     - Manually create monthly payment
+     Body: { planId: string }
+     Response: { message: string, payment: {} }
+
+================================================================================
+MONTHLY RATES BY PLAN TYPE
+================================================================================
+
+BASIC PLAN:
+  - Device Value: ZMW 1000 - 1500
+  - Monthly Premium: ZMW 50
+  - Coverage: 50% of device value
+
+PREMIUM PLAN:
+  - Device Value: ZMW 1500 - 3000
+  - Monthly Premium: ZMW 100
+  - Coverage: 100% of device value
+
+PRO PLAN:
+  - Device Value: ZMW 3000+
+  - Monthly Premium: ZMW 150+
+  - Coverage: 150% of device value
+
+================================================================================
+USER FLOW
+================================================================================
+
+1. USER SELECTS PLAN
+   └─ Payment created for current month
+   └─ Billing cycle set to current month/year
+   └─ Amount = plan.monthlyPremium
+
+2. DASHBOARD LOADS
+   └─ Calls /api/payment/check-due
+   └─ If payment due: Shows alert with amount
+   └─ Auto-creates payment if missing
+
+3. PAYMENTS PAGE
+   └─ Shows all payments grouped by month
+   └─ Each row shows: Date | Amount | Plan (Month-Year) | Status | Action
+   └─ Pending payments show "Pay Now" button
+   └─ Paid payments show "Receipt" button
+
+4. PAYMENT PROCESSING
+   Lenco: Status → 'paid' (webhook)
+   Stripe: Status → 'completed' (confirmPayment)
+
+5. NEW MONTH
+   └─ System detects new month
+   └─ Auto-creates new payment if not exists
+   └─ Alerts user to make payment
+
+================================================================================
+DATABASE FIELDS
+================================================================================
+
+Payment Document:
+  _id: ObjectId
+  user: ObjectId (ref User)
+  plan: ObjectId (ref InsurancePlan)
+  amount: Number (plan.monthlyPremium)
+  currency: String (default: 'ZMW')
+  billingCycle: {
+    month: Number (1-12),
+    year: Number (2026+)
+  }
+  status: String (pending|paid|completed|failed|refunded)
+  paymentMethod: String (lenco|stripe|manual|pending)
+  dueDate: Date
+  paidDate: Date
+  lencoTransactionId: String (if lenco)
+  lencoReference: String (if lenco)
+  stripeTransactionId: String (if stripe)
+  receiptNumber: String
+  createdAt: Date
+  updatedAt: Date
+
+================================================================================
+FRONT-END COMPONENTS
+================================================================================
+
+DASHBOARD (dashboard.ejs + dashboard.js):
+  - loadOverview() → calls checkAndDisplayPaymentDueAlert()
+  - Displays alert if payment due for current month
+  - Shows amount due with link to payments page
+
+PAYMENTS PAGE (payments.ejs):
+  - loadPayments() → displays all payments with month/year
+  - checkAndDisplayPaymentDue() → shows alert if due
+  - payDuePayment() → initiates payment for due amount
+  - payNow(paymentId) → starts Lenco/Stripe payment
+
+================================================================================
+TESTING CHECKLIST
+================================================================================
+
+[ ] Create insurance plan → Payment created for current month
+[ ] Check dashboard → Payment due alert visible if payment pending
+[ ] View payments page → Shows current month's payment
+[ ] Check payment amount → Matches plan.monthlyPremium
+[ ] Make Lenco payment → Status updates to 'paid'
+[ ] Make Stripe payment → Status updates to 'completed'
+[ ] Check next month (April) → New payment alert appears
+[ ] Verify billing cycle → Shows correct month/year
+[ ] Test multiple plans → Each shows separate monthly payments
+[ ] Test payment history → Payments grouped and sorted by date
+
+================================================================================

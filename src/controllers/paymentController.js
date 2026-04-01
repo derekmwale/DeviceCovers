@@ -395,3 +395,46 @@ exports.handleLencoPaymentSuccess = async (req, res) => {
     res.redirect('/user/payments?paymentStatus=error');
   }
 };
+
+// Add Monthly Payment Logic
+exports.createMonthlyPayment = async (req, res) => {
+  try {
+    const { planId } = req.body;
+    const userId = req.userId;
+
+    // Fetch the user's insurance plan
+    const plan = await InsurancePlan.findById(planId);
+    if (!plan) {
+      return res.status(404).json({ message: 'Insurance plan not found' });
+    }
+
+    // Get current month and year
+    const currentMonth = new Date().getMonth() + 1; // Months are 0-indexed
+    const currentYear = new Date().getFullYear();
+
+    // Check if payment already exists for this month
+    const existingPayment = await Payment.findOne({
+      user: userId,
+      billingCycle: { month: currentMonth, year: currentYear },
+    });
+
+    if (existingPayment) {
+      return res.status(400).json({ message: 'Payment for this month already exists' });
+    }
+
+    // Create a new payment
+    const newPayment = new Payment({
+      user: userId,
+      plan: planId,
+      amount: plan.monthlyPremium,
+      billingCycle: { month: currentMonth, year: currentYear },
+      status: 'pending',
+    });
+
+    await newPayment.save();
+
+    res.status(201).json({ message: 'Monthly payment created', payment: newPayment });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
