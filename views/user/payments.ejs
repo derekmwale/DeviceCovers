@@ -189,16 +189,10 @@
     }
   }
 
-  // Pay Now - Redirect to Mobile Money Payment Page
+  // Pay Now - Show Mobile Money Payment Page
   function payNow(paymentId) {
     // Store the payment ID in sessionStorage for the mobile money page
     sessionStorage.setItem('currentPaymentId', paymentId);
-    
-    // Create a hidden container to show the mobile money page
-    const mobileMoneyPage = document.createElement('div');
-    mobileMoneyPage.id = 'mobile-money-page';
-    mobileMoneyPage.style.display = 'none';
-    document.body.appendChild(mobileMoneyPage);
     
     // Load the mobile money payment page
     loadMobileMoneyPaymentPage(paymentId);
@@ -266,6 +260,13 @@
         </div>
       `;
       
+      // Remove any existing overlay first
+      const existingOverlay = document.getElementById('mobile-money-overlay');
+      if (existingOverlay) {
+        existingOverlay.remove();
+      }
+      
+      // Insert the overlay at the end of body
       document.body.insertAdjacentHTML('beforeend', pageHTML);
     } catch (error) {
       alert('Error loading payment page: ' + error.message);
