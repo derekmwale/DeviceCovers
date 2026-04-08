@@ -18,7 +18,7 @@ const connectDB = async () => {
       retryWrites: true,
       w: 'majority',
       maxIdleTimeMS: 60000,
-      appName: 'SafeTech',
+      appName: 'DeviceCovers',
       family: 4, // Force IPv4
     });
     

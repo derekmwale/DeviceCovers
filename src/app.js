@@ -101,7 +101,7 @@ app.use('/admin', require('./routes/adminRoutes'));
 
 // View Routes
 app.get('/', (req, res) => {
-  res.render('index', { title: 'SafeTech - Laptop Insurance' });
+  res.render('index', { title: 'DeviceCovers - Laptop Insurance' });
 });
 
 app.get('/dashboard', (req, res) => {
@@ -166,7 +166,7 @@ app.use((err, req, res, next) => {
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
-    console.log(`🚀 SafeTech Platform running on http://localhost:${PORT}`);
+    console.log(`🚀 DeviceCovers Platform running on http://localhost:${PORT}`);
   });
 }
 
