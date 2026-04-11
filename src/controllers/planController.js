@@ -36,14 +36,66 @@ exports.createPlan = async (req, res) => {
       });
     }
 
+    // Set plan details based on plan type
+    const planDetails = {
+      basic: {
+        monthlyPremium: 15,
+        coverageAmount: laptop.purchaseValue * 0.8,
+        deductible: 50,
+        coverageDetails: {
+          accidentalDamage: true,
+          theft: true,
+          loss: false,
+          waterDamage: false,
+          extendedWarranty: false,
+        }
+      },
+      standard: {
+        monthlyPremium: 25,
+        coverageAmount: laptop.purchaseValue * 0.9,
+        deductible: 25,
+        coverageDetails: {
+          accidentalDamage: true,
+          theft: true,
+          loss: false,
+          waterDamage: true,
+          extendedWarranty: false,
+        }
+      },
+      premium: {
+        monthlyPremium: 40,
+        coverageAmount: laptop.purchaseValue,
+        deductible: 0,
+        coverageDetails: {
+          accidentalDamage: true,
+          theft: true,
+          loss: true,
+          waterDamage: true,
+          extendedWarranty: true,
+        }
+      }
+    };
+
+    const details = planDetails[planType] || planDetails.basic;
+
     const plan = new InsurancePlan({
       user: req.userId,
       laptop: laptopId,
       planType,
       deviceValue: laptop.purchaseValue,
+      monthlyPremium: details.monthlyPremium,
+      coverageAmount: details.coverageAmount,
+      deductible: details.deductible,
+      coverageDetails: details.coverageDetails,
+      status: 'active', // Set to active immediately
+      approvalDate: new Date(),
     });
 
     await plan.save();
+
+    // Update laptop with current plan
+    laptop.currentPlan = plan._id;
+    await laptop.save();
 
     // Create first payment record
     const nextMonth = new Date();
@@ -61,7 +113,7 @@ exports.createPlan = async (req, res) => {
     await payment.save();
 
     res.status(201).json({
-      message: 'Insurance plan created. Awaiting approval.',
+      message: 'Insurance plan activated successfully!',
       plan,
     });
   } catch (error) {

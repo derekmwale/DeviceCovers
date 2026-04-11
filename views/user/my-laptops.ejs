@@ -129,6 +129,19 @@
   </div>
 </div>
 
+<!-- Activate Insurance Plan Modal -->
+<div id="activateInsuranceModal" class="modal" style="display: none;">
+  <div class="modal-content modal-lg">
+    <span class="modal-close" onclick="closeInsuranceModal()">&times;</span>
+    <h2>🛡️ Choose Your Insurance Plan</h2>
+    <p class="modal-subtitle">Select an insurance plan to protect your device</p>
+    
+    <div id="plansList" class="plans-grid">
+      <div class="loading">Loading available plans...</div>
+    </div>
+  </div>
+</div>
+
 <script>
   let allLaptops = [];
   let currentLaptopId = null;
@@ -212,6 +225,7 @@
 
         <div class="laptop-actions">
           <button class="btn btn-sm btn-secondary" onclick="viewLaptopDetails('${laptop._id}')">View Details</button>
+          ${!laptop.currentPlan ? `<button class="btn btn-sm btn-primary" onclick="showActivatePlanModal('${laptop._id}')">🛡️ Activate Insurance</button>` : ''}
           <button class="btn btn-sm btn-secondary" onclick="editLaptop('${laptop._id}')">Edit</button>
           <button class="btn btn-sm btn-danger" onclick="deleteLaptop('${laptop._id}')">Delete</button>
         </div>
@@ -347,6 +361,101 @@
     }
   }
 
+  // Insurance Plan Functions
+  let selectedLaptopForPlan = null;
+
+  async function showActivatePlanModal(laptopId) {
+    selectedLaptopForPlan = laptopId;
+    const modal = document.getElementById('activateInsuranceModal');
+    const plansList = document.getElementById('plansList');
+
+    try {
+      plansList.innerHTML = '<div class="loading">Loading available plans...</div>';
+      modal.style.display = 'flex';
+
+      // Fetch available plan types
+      const plansData = [
+        {
+          name: 'Basic Shield',
+          type: 'basic',
+          coverage: 'Accidental Damage & Theft',
+          monthlyPremium: 15,
+          deductible: 50,
+          description: 'Essential protection for your device'
+        },
+        {
+          name: 'Premium Protection',
+          type: 'standard',
+          coverage: 'Accidental Damage, Theft & Water Damage',
+          monthlyPremium: 25,
+          deductible: 25,
+          description: 'Comprehensive coverage for peace of mind'
+        },
+        {
+          name: 'Ultimate Guard',
+          type: 'premium',
+          coverage: 'All-inclusive with accidental damage & 48hr replacement',
+          monthlyPremium: 40,
+          deductible: 0,
+          description: 'Maximum protection with no deductible'
+        }
+      ];
+
+      plansList.innerHTML = plansData.map(plan => `
+        <div class="plan-card">
+          <div class="plan-header">
+            <h3>${plan.name}</h3>
+            <span class="plan-premium">ZMW ${plan.monthlyPremium.toFixed(2)}/month</span>
+          </div>
+          <div class="plan-info">
+            <p><strong>Coverage:</strong> ${plan.coverage}</p>
+            <p><strong>Deductible:</strong> ZMW ${plan.deductible}</p>
+            <p class="plan-desc">${plan.description}</p>
+          </div>
+          <button class="btn btn-primary" onclick="activateInsurancePlan('${plan.type}')">Select This Plan</button>
+        </div>
+      `).join('');
+    } catch (error) {
+      plansList.innerHTML = `<p style="color: red;">Error loading plans: ${error.message}</p>`;
+    }
+  }
+
+  function closeInsuranceModal() {
+    document.getElementById('activateInsuranceModal').style.display = 'none';
+    selectedLaptopForPlan = null;
+  }
+
+  async function activateInsurancePlan(planType) {
+    if (!selectedLaptopForPlan) {
+      alert('Error: No laptop selected');
+      return;
+    }
+
+    try {
+      const button = event.target;
+      button.disabled = true;
+      button.textContent = 'Activating...';
+
+      const response = await apiCall('/api/plan', {
+        method: 'POST',
+        body: JSON.stringify({
+          laptopId: selectedLaptopForPlan,
+          planType: planType
+        })
+      });
+
+      alert('✓ Insurance plan activated successfully! Plan #' + response.plan._id);
+      closeInsuranceModal();
+      loadLaptops();
+    } catch (error) {
+      alert('Error activating insurance plan: ' + error.message);
+    } finally {
+      const button = event.target;
+      button.disabled = false;
+      button.textContent = 'Select This Plan';
+    }
+  }
+
   // Search functionality
   document.getElementById('searchLaptops').addEventListener('input', (e) => {
     const searchTerm = e.target.value.toLowerCase();
@@ -366,8 +475,10 @@
   window.addEventListener('click', (e) => {
     const laptopModal = document.getElementById('laptopModal');
     const editModal = document.getElementById('editLaptopModal');
+    const insuranceModal = document.getElementById('activateInsuranceModal');
     if (e.target === laptopModal) closeLaptopModal();
     if (e.target === editModal) closeEditModal();
+    if (e.target === insuranceModal) closeInsuranceModal();
   });
 
   // Load laptops on page load
@@ -610,6 +721,105 @@
     margin-top: 2rem;
     justify-content: flex-end;
   }
+
+  /* Insurance Plans Modal Styles */
+  .modal-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .plan-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border: 2px solid rgba(59, 130, 246, 0.15);
+    border-radius: var(--rounded-xl);
+    padding: 2rem;
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .plan-card:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.15);
+    transform: translateY(-5px);
+  }
+
+  .plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 2px solid rgba(59, 130, 246, 0.1);
+    padding-bottom: 1rem;
+  }
+
+  .plan-header h3 {
+    margin: 0;
+    color: var(--primary);
+    font-weight: var(--font-bold);
+    font-size: 1.3rem;
+  }
+
+  .plan-premium {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--rounded-lg);
+    font-weight: var(--font-bold);
+    white-space: nowrap;
+  }
+
+  .plan-info {
+    flex-grow: 1;
+  }
+
+  .plan-info p {
+    margin: 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+  }
+
+  .plan-info strong {
+    color: var(--primary);
+    font-weight: var(--font-semibold);
+  }
+
+  .plan-desc {
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 1rem !important;
+  }
+
+  .plan-card .btn {
+    width: 100%;
+    text-align: center;
+    margin-top: auto;
+  }
+
+  @media (max-width: 768px) {
+    .plans-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .plan-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .plan-premium {
+      align-self: flex-start;
+    }
+  }
+
 
   .modal-actions .btn {
     min-width: 120px;

@@ -37,20 +37,20 @@
     </div>
 
     <div class="dashboard-content">
-  <div class="claims-page-container">
-    <div class="page-header">
+  <div class="claims-page-container" style="padding: var(--space-8); max-width: 1200px; margin: 0 auto;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-8); gap: var(--space-6);">
       <div class="header-content">
-        <h1>📋 Insurance Claims</h1>
-        <p>Track and manage your insurance claims</p>
+        <h1 style="font-size: var(--text-3xl); font-weight: var(--font-extrabold); color: var(--primary); margin-bottom: var(--space-2);">📋 Insurance Claims</h1>
+        <p style="font-size: var(--text-base); color: var(--text-secondary);">Track and manage your insurance claims</p>
       </div>
       <div class="header-action">
-        <button class="btn btn-primary btn-lg">+ Submit New Claim</button>
+        <button class="btn btn-primary btn-lg" onclick="showSubmitClaimForm()" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; border: none; padding: var(--space-4) var(--space-8); font-size: var(--text-base); font-weight: var(--font-bold); border-radius: var(--rounded-lg); cursor: pointer; transition: all var(--transition-base); white-space: nowrap;">+ Submit New Claim</button>
       </div>
     </div>
 
     <!-- Claims List -->
-    <div class="claims-section">
-      <div id="claimsList" class="claims-list-container"></div>
+    <div class="claims-section" style="display: flex; flex-direction: column; gap: var(--space-6); margin-bottom: var(--space-12);">
+      <div id="claimsList" class="claims-list-container" style="display: flex; flex-direction: column; gap: var(--space-6);"></div>
     </div>
   </div>
 </div>
@@ -103,7 +103,7 @@
               </div>
               <div class="detail-row">
                 <span class="label">Amount:</span>
-                <span class="value">$${claim.estimatedCost?.toFixed(2) || '0.00'}</span>
+                <span class="value">ZMW ${claim.estimatedCost?.toFixed(2) || '0.00'}</span>
               </div>
               <div class="detail-row">
                 <span class="label">Submitted:</span>
@@ -132,88 +132,134 @@
   // Show Submit Claim Form
   async function showSubmitClaimForm() {
     try {
-      const laptops = await apiCall('/api/laptop');
+      const response = await fetch('/api/laptop');
+      const laptops = await response.json();
       
-      if (laptops.length === 0) {
-        alert('Please add a laptop and activate an insurance plan first.');
+      if (!laptops || laptops.length === 0) {
+        showNotification('Please add a laptop and activate an insurance plan first.', 'error');
         return;
       }
 
       const laptopOptions = laptops
-        .filter(l => l.status === 'active')
+        .filter(l => l.status === 'active' && l.currentPlan)
         .map(l => `<option value="${l._id}">${l.brand} ${l.model}</option>`)
         .join('');
 
       if (!laptopOptions) {
-        alert('Please activate an insurance plan for a laptop first.');
+        showNotification('Please activate an insurance plan for a laptop first.', 'error');
         return;
       }
 
       const modal = `
-        <div class="modal-overlay" onclick="closeModal(event)">
-          <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeModal()">&times;</button>
-            <h2>Submit Insurance Claim</h2>
-            <form id="submitClaimForm">
-              <div class="form-group">
-                <label for="laptopId">Select Device *</label>
-                <select id="laptopId" name="laptopId" required>
-                  <option value="">Choose a device...</option>
-                  ${laptopOptions}
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="claimType">Claim Type *</label>
-                <select id="claimType" name="claimType" required>
-                  <option value="">Select claim type...</option>
-                  <option value="damage">Damage</option>
-                  <option value="theft">Theft</option>
-                  <option value="loss">Loss</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="description">Description *</label>
-                <textarea id="description" name="description" rows="4" placeholder="Describe what happened..." required></textarea>
-              </div>
-              <div class="form-group">
-                <label for="estimatedCost">Estimated Cost ($) *</label>
-                <input type="number" id="estimatedCost" name="estimatedCost" min="0" step="0.01" required />
-              </div>
-              <button type="submit" class="btn btn-primary">Submit Claim</button>
-            </form>
+        <div class="mobile-money-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: var(--space-4);">
+          <div class="mobile-money-container" style="background: #ffffff; border-radius: var(--rounded-xl); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;">
+            <!-- Header -->
+            <div class="mm-header" style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-6); border-bottom: 1px solid rgba(59, 130, 246, 0.1); background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; border-radius: var(--rounded-xl) var(--rounded-xl) 0 0;">
+              <button class="mm-back-btn" onclick="closeModal()" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: var(--space-2) var(--space-4); border-radius: var(--rounded-md); cursor: pointer; font-weight: var(--font-semibold); transition: all var(--transition-base);">← Back</button>
+              <h1 style="margin: 0; font-size: var(--text-xl); font-weight: var(--font-bold);">📋 Submit Claim</h1>
+              <div></div>
+            </div>
+            
+            <!-- Form -->
+            <div style="padding: var(--space-6);">
+              <form id="submitClaimForm" style="display: flex; flex-direction: column; gap: var(--space-6);">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="laptopId" style="display: block; font-weight: var(--font-semibold); margin-bottom: var(--space-2); color: var(--text-primary); font-size: var(--text-sm);">Select Device *</label>
+                  <select id="laptopId" name="laptopId" required style="width: 100%; padding: var(--space-3) var(--space-4); border: 2px solid rgba(59, 130, 246, 0.15); border-radius: var(--rounded-md); font-family: inherit; font-size: var(--text-base); font-weight: 500; transition: all var(--transition-base); background: #ffffff; color: var(--text-primary);">
+                    <option value="">Choose a device...</option>
+                    ${laptopOptions}
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="incidentDate" style="display: block; font-weight: var(--font-semibold); margin-bottom: var(--space-2); color: var(--text-primary); font-size: var(--text-sm);">Incident Date *</label>
+                  <input type="date" id="incidentDate" name="incidentDate" required style="width: 100%; padding: var(--space-3) var(--space-4); border: 2px solid rgba(59, 130, 246, 0.15); border-radius: var(--rounded-md); font-family: inherit; font-size: var(--text-base); font-weight: 500; transition: all var(--transition-base); background: #ffffff; color: var(--text-primary);" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="claimType" style="display: block; font-weight: var(--font-semibold); margin-bottom: var(--space-2); color: var(--text-primary); font-size: var(--text-sm);">Claim Type *</label>
+                  <select id="claimType" name="claimType" required style="width: 100%; padding: var(--space-3) var(--space-4); border: 2px solid rgba(59, 130, 246, 0.15); border-radius: var(--rounded-md); font-family: inherit; font-size: var(--text-base); font-weight: 500; transition: all var(--transition-base); background: #ffffff; color: var(--text-primary);">
+                    <option value="">Select claim type...</option>
+                    <option value="damage">🔨 Damage</option>
+                    <option value="theft">🚨 Theft</option>
+                    <option value="loss">❌ Loss</option>
+                    <option value="water">💧 Water Damage</option>
+                    <option value="other">📝 Other</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="description" style="display: block; font-weight: var(--font-semibold); margin-bottom: var(--space-2); color: var(--text-primary); font-size: var(--text-sm);">Description *</label>
+                  <textarea id="description" name="description" rows="3" placeholder="Describe what happened..." required style="width: 100%; padding: var(--space-3) var(--space-4); border: 2px solid rgba(59, 130, 246, 0.15); border-radius: var(--rounded-md); font-family: inherit; font-size: var(--text-base); font-weight: 500; transition: all var(--transition-base); background: #ffffff; color: var(--text-primary); resize: vertical;"></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="location" style="display: block; font-weight: var(--font-semibold); margin-bottom: var(--space-2); color: var(--text-primary); font-size: var(--text-sm);">Location of Incident *</label>
+                  <input type="text" id="location" name="location" placeholder="Where did it happen?" required style="width: 100%; padding: var(--space-3) var(--space-4); border: 2px solid rgba(59, 130, 246, 0.15); border-radius: var(--rounded-md); font-family: inherit; font-size: var(--text-base); font-weight: 500; transition: all var(--transition-base); background: #ffffff; color: var(--text-primary);" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="estimatedCost" style="display: block; font-weight: var(--font-semibold); margin-bottom: var(--space-2); color: var(--text-primary); font-size: var(--text-sm);">Estimated Cost (ZMW) *</label>
+                  <input type="number" id="estimatedCost" name="estimatedCost" min="0" step="0.01" required placeholder="0.00" style="width: 100%; padding: var(--space-3) var(--space-4); border: 2px solid rgba(59, 130, 246, 0.15); border-radius: var(--rounded-md); font-family: inherit; font-size: var(--text-base); font-weight: 500; transition: all var(--transition-base); background: #ffffff; color: var(--text-primary);" />
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: var(--space-3) var(--space-4); background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; border: none; border-radius: var(--rounded-lg); font-weight: var(--font-bold); font-size: var(--text-base); cursor: pointer; transition: all var(--transition-base); margin-top: var(--space-4);">✓ Submit Claim</button>
+              </form>
+            </div>
           </div>
         </div>
       `;
 
       document.body.insertAdjacentHTML('beforeend', modal);
 
-      document.getElementById('submitClaimForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+      // Add event listener to the form
+      const formEl = document.getElementById('submitClaimForm');
+      if (formEl) {
+        formEl.addEventListener('submit', async (e) => {
+          e.preventDefault();
 
-        const formData = new FormData(e.target);
-        const data = {
-          laptop: formData.get('laptopId'),
-          claimType: formData.get('claimType'),
-          description: formData.get('description'),
-          estimatedCost: parseFloat(formData.get('estimatedCost')),
-        };
+          const laptopId = document.getElementById('laptopId').value;
+          const incidentDate = document.getElementById('incidentDate').value;
+          const claimType = document.getElementById('claimType').value;
+          const description = document.getElementById('description').value;
+          const location = document.getElementById('location').value;
+          const estimatedCost = document.getElementById('estimatedCost').value;
 
-        try {
-          await apiCall('/api/claim', {
-            method: 'POST',
-            body: JSON.stringify(data),
-          });
+          if (!laptopId || !incidentDate || !claimType || !description || !location || !estimatedCost) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+          }
 
-          alert('Claim submitted successfully! Our team will review it shortly.');
-          closeModal();
-          loadClaims();
-        } catch (error) {
-          alert('Error submitting claim: ' + error.message);
-        }
-      });
+          const data = {
+            laptopId: laptopId,
+            incidentDate: incidentDate,
+            claimType: claimType,
+            description: description,
+            location: location,
+            reportedToPolice: false,
+            estimatedCost: parseFloat(estimatedCost),
+          };
+
+          try {
+            const response = await fetch('/api/claim', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+              showNotification('✓ Claim submitted successfully! Claim #' + (result.claimNumber || ''), 'success');
+              setTimeout(() => {
+                closeModal();
+                loadClaims();
+              }, 1500);
+            } else {
+              showNotification(result.message || 'Error submitting claim', 'error');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            showNotification('Error submitting claim: ' + error.message, 'error');
+          }
+        });
+      }
     } catch (error) {
-      alert('Error loading form: ' + error.message);
+      console.error('Error loading form:', error);
+      showNotification('Error loading form: ' + error.message, 'error');
     }
   }
 
@@ -332,5 +378,238 @@
 
 
 <script src="/js/main.js"></script>
+
+<script>
+  // Notification system
+  function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+      position: fixed;
+      top: var(--space-6);
+      right: var(--space-6);
+      background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+      color: white;
+      padding: var(--space-4) var(--space-6);
+      border-radius: var(--rounded-lg);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      z-index: 10001;
+      font-weight: 500;
+      max-width: 400px;
+      animation: slideIn 0.3s ease-out;
+    `;
+    document.body.appendChild(notification);
+    notification.textContent = message;
+
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease-out';
+      setTimeout(() => notification.remove(), 300);
+    }, 4000);
+  }
+
+  // Add animations
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Close modal function
+  function closeModal() {
+    const overlay = document.querySelector('.mobile-money-overlay');
+    if (overlay) overlay.remove();
+  }
+
+  // Load user's laptops
+  async function loadLaptopsForClaim() {
+    try {
+      const response = await fetch('/api/laptop');
+      const laptops = await response.json();
+      
+      let options = '<option value="">Choose a device...</option>';
+      laptops.forEach(laptop => {
+        options += `<option value="${laptop._id}">${laptop.brand} ${laptop.model} (${laptop.serialNumber})</option>`;
+      });
+      
+      return options;
+    } catch (error) {
+      console.error('Error loading laptops:', error);
+      return '<option value="">Error loading devices</option>';
+    }
+  }
+</script>
+
+<style>
+  /* Claims Page Styling */
+  .claims-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    min-height: calc(100vh - 200px);
+  }
+
+  .claims-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .claim-card-detailed {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border: 2px solid rgba(59, 130, 246, 0.15);
+    border-radius: var(--rounded-xl);
+    padding: var(--space-6);
+    transition: all var(--transition-base);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .claim-card-detailed:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .claim-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 2px solid rgba(59, 130, 246, 0.1);
+  }
+
+  .claim-header h3 {
+    margin: 0;
+    color: var(--primary);
+    font-weight: var(--font-bold);
+    font-size: 1.2rem;
+  }
+
+  .badge {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--rounded-full);
+    font-size: 0.85rem;
+    font-weight: var(--font-semibold);
+    white-space: nowrap;
+  }
+
+  .badge-pending {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f39c12;
+  }
+
+  .badge-approved {
+    background: rgba(39, 174, 96, 0.2);
+    color: #27ae60;
+  }
+
+  .badge-rejected {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+  }
+
+  .badge-completed {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+  }
+
+  .claim-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .detail-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .detail-row .label {
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .detail-row .value {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .claim-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+  }
+
+  .claim-actions .btn {
+    padding: var(--space-2) var(--space-4);
+    font-size: 0.9rem;
+    border-radius: var(--rounded-lg);
+    transition: all var(--transition-base);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-12);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border: 2px dashed rgba(59, 130, 246, 0.2);
+    border-radius: var(--rounded-xl);
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+  }
+
+  .error-message {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    padding: var(--space-6);
+    border-radius: var(--rounded-lg);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    .claims-page-container {
+      padding: var(--space-4);
+    }
+
+    .claim-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .claim-details {
+      grid-template-columns: 1fr;
+    }
+
+    .claim-actions {
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+  }
+</style>
 </body>
 </html>
