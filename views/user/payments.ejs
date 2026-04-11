@@ -40,33 +40,33 @@
   <div class="payments-page-container">
     <div class="page-header">
       <div class="header-content">
-        <h1>💳 Payment Management</h1>
-        <p>View and manage your insurance premium payments</p>
+        <h1 style="font-size: var(--text-3xl); font-weight: var(--font-extrabold); color: var(--primary); margin-bottom: var(--space-2);">💳 Payment Management</h1>
+        <p style="font-size: var(--text-base); color: var(--text-secondary);">View and manage your insurance premium payments</p>
       </div>
       <div class="header-action">
-        <div class="quick-stat">
-          <span class="label">Total Paid</span>
-          <span class="value" id="totalPaidQuick">ZMW 0.00</span>
+        <div class="quick-stat" style="background: #ffffff; border: 1px solid rgba(59, 130, 246, 0.1); padding: var(--space-5); border-radius: var(--rounded-lg); box-shadow: var(--shadow-sm);">
+          <span class="label" style="display: block; font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-2);">Total Paid</span>
+          <span class="value" id="totalPaidQuick" style="display: block; font-size: var(--text-xl); font-weight: var(--font-bold); color: var(--primary);">ZMW 0.00</span>
         </div>
       </div>
     </div>
 
     <!-- Payment Stats -->
-    <div class="payment-stats">
-      <div class="stat-card">
-        <div class="stat-icon">💰</div>
-        <h3>Total Paid</h3>
-        <p class="stat-value" id="totalPaid">ZMW 0.00</p>
+    <div class="payment-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-8);">
+      <div class="stat-card" style="background: #ffffff; border: 1px solid rgba(59, 130, 246, 0.1); padding: var(--space-6); border-radius: var(--rounded-lg); box-shadow: var(--shadow-md); transition: all var(--transition-base);">
+        <div class="stat-icon" style="font-size: var(--text-3xl); margin-bottom: var(--space-3);">💰</div>
+        <h3 style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase; letter-spacing: 0.5px; font-weight: var(--font-semibold);">Total Paid</h3>
+        <p class="stat-value" id="totalPaid" style="font-size: var(--text-2xl); font-weight: var(--font-bold); color: var(--primary);">ZMW 0.00</p>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">⏳</div>
-        <h3>Pending Payments</h3>
-        <p class="stat-value" id="pendingCount">0</p>
+      <div class="stat-card" style="background: #ffffff; border: 1px solid rgba(59, 130, 246, 0.1); padding: var(--space-6); border-radius: var(--rounded-lg); box-shadow: var(--shadow-md); transition: all var(--transition-base);">
+        <div class="stat-icon" style="font-size: var(--text-3xl); margin-bottom: var(--space-3);">⏳</div>
+        <h3 style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase; letter-spacing: 0.5px; font-weight: var(--font-semibold);">Pending Payments</h3>
+        <p class="stat-value" id="pendingCount" style="font-size: var(--text-2xl); font-weight: var(--font-bold); color: var(--danger);">0</p>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">📊</div>
-        <h3>Monthly Average</h3>
-        <p class="stat-value" id="monthlyAvg">ZMW 0.00</p>
+      <div class="stat-card" style="background: #ffffff; border: 1px solid rgba(59, 130, 246, 0.1); padding: var(--space-6); border-radius: var(--rounded-lg); box-shadow: var(--shadow-md); transition: all var(--transition-base);">
+        <div class="stat-icon" style="font-size: var(--text-3xl); margin-bottom: var(--space-3);">📊</div>
+        <h3 style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase; letter-spacing: 0.5px; font-weight: var(--font-semibold);">Monthly Average</h3>
+        <p class="stat-value" id="monthlyAvg" style="font-size: var(--text-2xl); font-weight: var(--font-bold); color: var(--secondary);">ZMW 0.00</p>
       </div>
     </div>
 
@@ -77,8 +77,8 @@
     </div>
 
     <!-- Payments Table -->
-    <div class="payments-table-section">
-      <h2>Payment History</h2>
+    <div class="payments-table-section" style="background: #ffffff; border-radius: var(--rounded-xl); border: 1px solid rgba(59, 130, 246, 0.1); padding: var(--space-8); box-shadow: var(--shadow-md);">
+      <h2 style="font-size: var(--text-xl); font-weight: var(--font-bold); margin-bottom: var(--space-6); color: var(--primary);">Payment History</h2>
       <div class="table-responsive">
         <table class="payments-table">
           <thead>
@@ -95,12 +95,6 @@
           </tbody>
         </table>
       </div>
-    </div>
-
-    <!-- Pending Payments Alert -->
-    <div id="pendingPaymentsAlert" class="alert alert-warning" style="display: none;">
-      <h3>⚠️ Action Required</h3>
-      <p>You have pending payments. Please complete them to maintain your coverage.</p>
     </div>
   </div>
 </div>
@@ -159,8 +153,8 @@
               </td>
               <td>
                 ${payment.status === 'pending' 
-                  ? `<button class="btn btn-sm btn-primary" onclick="payNow('${payment._id}')">Pay Now</button>`
-                  : `<button class="btn btn-sm btn-secondary" onclick="viewReceipt('${payment._id}')">Receipt</button>`
+                  ? `<button class="btn btn-sm btn-primary" onclick="payNow('${payment._id}')" style="padding: var(--space-2) var(--space-4); font-size: var(--text-sm);">Pay Now</button>`
+                  : `<button class="btn btn-sm btn-secondary" onclick="viewReceipt('${payment._id}')" style="padding: var(--space-2) var(--space-4); font-size: var(--text-sm);">Receipt</button>`
                 }
               </td>
             </tr>
