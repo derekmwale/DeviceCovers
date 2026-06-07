@@ -1,2 +1,2 @@
-# SafeTech
+# DeviceCovers
 Laptop Insurance Platform
